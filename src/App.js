@@ -22,7 +22,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Icon from "@mui/material/Icon";
-
+import "./App.css";
 // Soft UI Dashboard React components
 import SoftBox from "components/SoftBox";
 
@@ -47,7 +47,7 @@ import { useSoftUIController, setMiniSidenav, setOpenConfigurator } from "contex
 
 // Images
 import brand from "assets/images/logo-ct.png";
-
+import ProtectedRoute from "protectedRoute/protectedRoute";
 export default function App() {
   const [controller, dispatch] = useSoftUIController();
   const { miniSidenav, direction, layout, openConfigurator, sidenavColor } = controller;
@@ -102,35 +102,22 @@ export default function App() {
       }
 
       if (route.route) {
-        return <Route exact path={route.route} element={route.component} key={route.key} />;
+        const isPublicRoute = route.route === "/authentication/sign-in";
+
+        return (
+          <Route
+            exact
+            path={route.route}
+            key={route.key}
+            element={
+              isPublicRoute ? route.component : <ProtectedRoute>{route.component}</ProtectedRoute>
+            }
+          />
+        );
       }
 
       return null;
     });
-
-  const configsButton = (
-    <SoftBox
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      width="3.5rem"
-      height="3.5rem"
-      bgColor="white"
-      shadow="sm"
-      borderRadius="50%"
-      position="fixed"
-      right="2rem"
-      bottom="2rem"
-      zIndex={99}
-      color="dark"
-      sx={{ cursor: "pointer" }}
-      onClick={handleConfiguratorOpen}
-    >
-      <Icon fontSize="default" color="inherit">
-        settings
-      </Icon>
-    </SoftBox>
-  );
 
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
@@ -147,7 +134,6 @@ export default function App() {
               onMouseLeave={handleOnMouseLeave}
             />
             <Configurator />
-            {configsButton}
           </>
         )}
         {layout === "vr" && <Configurator />}
@@ -171,7 +157,6 @@ export default function App() {
             onMouseLeave={handleOnMouseLeave}
           />
           <Configurator />
-          {configsButton}
         </>
       )}
       {layout === "vr" && <Configurator />}

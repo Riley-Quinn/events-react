@@ -8,7 +8,7 @@
 
 Coded by www.creative-tim.com
 
- =========================================================
+=========================================================
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
@@ -16,7 +16,7 @@ Coded by www.creative-tim.com
 import { useState } from "react";
 
 // react-router-dom components
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // @mui material components
 import Switch from "@mui/material/Switch";
@@ -26,32 +26,57 @@ import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import SoftInput from "components/SoftInput";
 import SoftButton from "components/SoftButton";
-
+import axios from "axios";
 // Authentication layout components
 import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
-import curved9 from "assets/images/curved-images/curved-6.jpg";
-
+import bgggbggggg1 from "../../../assets/images/bgmain.jpg";
+import { ability } from "../../../contexts/AbilityContext";
+import { defineAbilityFor } from "../../../casl/defineAbility";
+import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 function SignIn() {
-  const [rememberMe, setRememberMe] = useState(true);
-
-  const handleSetRememberMe = () => setRememberMe(!rememberMe);
-
+  const { fetchError, fetchSuccess } = useSnackbar();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post("http://localhost:4000/api/auth/login", {
+        email,
+        password,
+      });
+      const { token, user, permissions } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("permissions", JSON.stringify(permissions));
+      ability.update(defineAbilityFor(permissions));
+      navigate("/dashboard", { replace: true });
+      fetchSuccess(res?.data?.message);
+    } catch (err) {
+      console.log("err", err);
+      fetchError(err?.response?.data?.message || "Login failed. Please try again.");
+    }
+  };
   return (
     <CoverLayout
       title="Welcome back"
       description="Enter your email and password to sign in"
-      image={curved9}
+      image={bgggbggggg1}
     >
-      <SoftBox component="form" role="form">
+      <SoftBox component="form" role="form" className="loginPage">
         <SoftBox mb={2}>
           <SoftBox mb={1} ml={0.5}>
             <SoftTypography component="label" variant="caption" fontWeight="bold">
               Email
             </SoftTypography>
           </SoftBox>
-          <SoftInput type="email" placeholder="Email" />
+          <SoftInput
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </SoftBox>
         <SoftBox mb={2}>
           <SoftBox mb={1} ml={0.5}>
@@ -59,39 +84,20 @@ function SignIn() {
               Password
             </SoftTypography>
           </SoftBox>
-          <SoftInput type="password" placeholder="Password" />
+          <SoftInput
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </SoftBox>
-        <SoftBox display="flex" alignItems="center">
-          <Switch checked={rememberMe} onChange={handleSetRememberMe} />
-          <SoftTypography
-            variant="button"
-            fontWeight="regular"
-            onClick={handleSetRememberMe}
-            sx={{ cursor: "pointer", userSelect: "none" }}
-          >
-            &nbsp;&nbsp;Remember me
-          </SoftTypography>
-        </SoftBox>
+
         <SoftBox mt={4} mb={1}>
-          <SoftButton variant="gradient" color="info" fullWidth>
+          <SoftButton variant="gradient" fullWidth onClick={handleLogin} className="add-usr-button">
             sign in
           </SoftButton>
         </SoftBox>
-        <SoftBox mt={3} textAlign="center">
-          <SoftTypography variant="button" color="text" fontWeight="regular">
-            Don&apos;t have an account?{" "}
-            <SoftTypography
-              component={Link}
-              to="/authentication/sign-up"
-              variant="button"
-              color="info"
-              fontWeight="medium"
-              textGradient
-            >
-              Sign up
-            </SoftTypography>
-          </SoftTypography>
-        </SoftBox>
+        <SoftBox mt={3} textAlign="center"></SoftBox>
       </SoftBox>
     </CoverLayout>
   );

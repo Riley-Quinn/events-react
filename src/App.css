@@ -1,0 +1,54 @@
+.MuiInputBase-root {
+  input,
+  textarea {
+    width: 100% !important;
+  }
+}
+.add-usr-button {
+  background: #ff883a !important;
+  color: #fff !important;
+}
+
+.add-usr-button:hover {
+  background: #e6762d !important; /* Darker shade on hover */
+}
+.cancel-button {
+  background: #6598d5 !important;
+  color: #fff !important;
+}
+
+.cancel-button:hover {
+  background: #6598d5 !important; /* Darker shade on hover */
+}
+.delete-btn {
+  background: #6574d5 !important;
+  color: #fff !important;
+  margin-left: 8px !important;
+}
+
+.delete-btn:hover {
+  background: #6574d5 !important; /* Darker shade on hover */
+}
+.logo {
+  width: 120px; /* Adjust as per design */
+  height: 120px;
+  object-fit: cover; /* Prevent distortion */
+  border-radius: 50%; /* Circular image */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+.sidenavv .MuiDrawer-paperAnchorLeft {
+  margin: 0 !important;
+  height: 100vh !important;
+  left: 0 !important;
+  border-radius: 0 !important;
+}
+header {
+  top: 0 !important;
+}
+table {
+  tr {
+    td:last-child {
+      min-width: 115px;
+    }
+  }
+}

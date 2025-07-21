@@ -1,17 +1,3 @@
-/**
-=========================================================
-* Soft UI Dashboard React - v4.0.1
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/soft-ui-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
 function collapseItem(theme, ownerState) {
   const { palette, transitions, breakpoints, boxShadows, borders, functions } = theme;
   const { active, transparentSidenav } = ownerState;
@@ -35,13 +21,7 @@ function collapseItem(theme, ownerState) {
     whiteSpace: "nowrap",
     boxShadow: active && transparentSidenav ? xxl : "none",
     [breakpoints.up("xl")]: {
-      boxShadow: () => {
-        if (active) {
-          return transparentSidenav ? xxl : "none";
-        }
-
-        return "none";
-      },
+      boxShadow: () => (active ? (transparentSidenav ? xxl : "none") : "none"),
       transition: transitions.create("box-shadow", {
         easing: transitions.easing.easeInOut,
         duration: transitions.duration.shorter,
@@ -52,21 +32,15 @@ function collapseItem(theme, ownerState) {
 
 function collapseIconBox(theme, ownerState) {
   const { palette, transitions, breakpoints, boxShadows, borders, functions } = theme;
-  const { active, transparentSidenav, color } = ownerState;
+  const { active } = ownerState;
 
-  const { white, info, light, gradients } = palette;
+  const { white, light } = palette;
   const { md } = boxShadows;
   const { borderRadius } = borders;
   const { pxToRem } = functions;
 
   return {
-    background: () => {
-      if (active) {
-        return color === "default" ? info.main : palette[color].main;
-      }
-
-      return light.main;
-    },
+    background: active ? "#ff883a" : light.main, // 🔥 Active background orange
     minWidth: pxToRem(32),
     minHeight: pxToRem(32),
     borderRadius: borderRadius.md,
@@ -78,32 +52,18 @@ function collapseIconBox(theme, ownerState) {
       duration: transitions.duration.standard,
     }),
 
-    [breakpoints.up("xl")]: {
-      background: () => {
-        let background;
-
-        if (!active) {
-          background = transparentSidenav ? white.main : light.main;
-        } else if (color === "default") {
-          background = info.main;
-        } else if (color === "warning") {
-          background = gradients.warning.main;
-        } else {
-          background = palette[color].main;
-        }
-
-        return background;
-      },
+    "& svg, svg g": {
+      fill: active ? white.main : "#344767", // 🔥 White icon when active, default dark when inactive
     },
 
-    "& svg, svg g": {
-      fill: active ? white.main : gradients.dark.state,
+    [breakpoints.up("xl")]: {
+      background: active ? "#ff883a" : light.main, // For large screens
     },
   };
 }
 
-const collapseIcon = ({ palette: { white, gradients } }, { active }) => ({
-  color: active ? white.main : gradients.dark.state,
+const collapseIcon = ({ palette: { white } }, { active }) => ({
+  color: active ? white.main : "#344767", // 🔥 White icon when active, default color when inactive
 });
 
 function collapseText(theme, ownerState) {

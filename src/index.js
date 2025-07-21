@@ -17,15 +17,22 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "App";
-
-// Soft UI Dashboard React Context Provider
+import { AbilityProvider } from "contexts/AbilityContext";
+import { defineAbilityFor } from "./casl/defineAbility";
 import { SoftUIControllerProvider } from "context";
+import { SnackbarProvider } from "components/AlertMessages/SnackbarContext";
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <BrowserRouter>
-    <SoftUIControllerProvider>
-      <App />
-    </SoftUIControllerProvider>
-  </BrowserRouter>
+const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
+const abilityRules = defineAbilityFor(permissions);
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <AbilityProvider permissions={abilityRules}>
+    <BrowserRouter>
+      <SoftUIControllerProvider>
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
+      </SoftUIControllerProvider>
+    </BrowserRouter>
+  </AbilityProvider>
 );

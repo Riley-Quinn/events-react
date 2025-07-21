@@ -33,19 +33,11 @@ import Footer from "layouts/authentication/components/Footer";
 function CoverLayout({ color, header, title, description, image, top, children }) {
   return (
     <PageLayout background="white">
-      <DefaultNavbar
-        action={{
-          type: "external",
-          route: "https://creative-tim.com/product/soft-ui-dashboard-react",
-          label: "free download",
-          color: "dark",
-        }}
-      />
       <Grid
         container
         justifyContent="center"
         sx={{
-          minHeight: "75vh",
+          minHeight: "100vh",
           margin: 0,
         }}
       >
@@ -55,7 +47,7 @@ function CoverLayout({ color, header, title, description, image, top, children }
               {!header ? (
                 <>
                   <SoftBox mb={1}>
-                    <SoftTypography variant="h3" fontWeight="bold" color={color} textGradient>
+                    <SoftTypography variant="h3" fontWeight="bold" sx={{ color: "#ff883a" }}>
                       {title}
                     </SoftTypography>
                   </SoftBox>
@@ -95,7 +87,6 @@ function CoverLayout({ color, header, title, description, image, top, children }
           </SoftBox>
         </Grid>
       </Grid>
-      <Footer />
     </PageLayout>
   );
 }

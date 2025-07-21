@@ -1,32 +1,17 @@
-/**
-=========================================================
-* Soft UI Dashboard React - v4.0.1
-=========================================================
+// examples/Sidenav/SidenavRoot.js
 
-* Product Page: https://www.creative-tim.com/product/soft-ui-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
-// @mui material components
 import Drawer from "@mui/material/Drawer";
 import { styled } from "@mui/material/styles";
 
 export default styled(Drawer)(({ theme, ownerState }) => {
   const { palette, boxShadows, transitions, breakpoints, functions } = theme;
-  const { transparentSidenav, miniSidenav } = ownerState;
+  const { transparentSidenav, miniSidenav, bgColor } = ownerState;
 
   const sidebarWidth = 250;
   const { white, transparent } = palette;
   const { xxl } = boxShadows;
   const { pxToRem } = functions;
 
-  // styles for the sidenav when miniSidenav={false}
   const drawerOpenStyles = () => ({
     transform: "translateX(0)",
     transition: transitions.create("transform", {
@@ -35,11 +20,12 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     }),
 
     [breakpoints.up("xl")]: {
-      backgroundColor: transparentSidenav ? transparent.main : white.main,
+      backgroundColor: bgColor || (transparentSidenav ? transparent.main : white.main),
       boxShadow: transparentSidenav ? "none" : xxl,
       marginBottom: transparentSidenav ? 0 : "inherit",
-      left: "0",
+      left: -12,
       width: sidebarWidth,
+      marginTop: 0,
       transform: "translateX(0)",
       transition: transitions.create(["width", "background-color"], {
         easing: transitions.easing.sharp,
@@ -48,7 +34,6 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     },
   });
 
-  // styles for the sidenav when miniSidenav={true}
   const drawerCloseStyles = () => ({
     transform: `translateX(${pxToRem(-320)})`,
     transition: transitions.create("transform", {
@@ -57,7 +42,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
     }),
 
     [breakpoints.up("xl")]: {
-      backgroundColor: transparentSidenav ? transparent.main : white.main,
+      backgroundColor: bgColor || (transparentSidenav ? transparent.main : white.main),
       boxShadow: transparentSidenav ? "none" : xxl,
       marginBottom: transparentSidenav ? 0 : "inherit",
       left: "0",

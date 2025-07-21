@@ -8,7 +8,7 @@
 
 Coded by www.creative-tim.com
 
- =========================================================
+=========================================================
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
@@ -36,7 +36,7 @@ import SoftInput from "components/SoftInput";
 // Soft UI Dashboard React examples
 import Breadcrumbs from "examples/Breadcrumbs";
 import NotificationItem from "examples/Items/NotificationItem";
-
+import axios from "axios";
 // Custom styles for DashboardNavbar
 import {
   navbar,
@@ -57,14 +57,22 @@ import {
 // Images
 import team2 from "assets/images/team-2.jpg";
 import logoSpotify from "assets/images/small-logos/logo-spotify.svg";
+import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 function DashboardNavbar({ absolute, light, isMini }) {
+  const { fetchError, fetchSuccess } = useSnackbar();
   const [navbarType, setNavbarType] = useState();
   const [controller, dispatch] = useSoftUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator } = controller;
   const [openMenu, setOpenMenu] = useState(false);
-  const route = useLocation().pathname.split("/").slice(1);
-
+  const location = useLocation();
+  const pathSegments = location.pathname.split("/").slice(1);
+  const route = pathSegments.map((segment) => {
+    if (!isNaN(segment)) {
+      return "Details"; // Or return null to skip
+    }
+    return segment.replace("-", " ");
+  });
   useEffect(() => {
     // Setting the navbar type
     if (fixedNavbar) {
@@ -78,8 +86,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
       setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
     }
 
-    /** 
-     The event listener that's calling the handleTransparentNavbar function when 
+    /**
+     The event listener that's calling the handleTransparentNavbar function when
      scrolling the window.
     */
     window.addEventListener("scroll", handleTransparentNavbar);
@@ -134,6 +142,35 @@ function DashboardNavbar({ absolute, light, isMini }) {
       />
     </Menu>
   );
+  // Logout function (React)
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        "http://localhost:4000/api/auth/logout",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("permissions");
+      localStorage.removeItem("user");
+
+      fetchSuccess(res?.data?.message || "Logged out successfully");
+
+      window.location.href = "/authentication/sign-in";
+    } catch (err) {
+      fetchError(err?.response?.data?.message || "Logout failed");
+
+      localStorage.clear();
+
+      window.location.href = "/authentication/sign-in";
+    }
+  };
 
   return (
     <AppBar
@@ -147,62 +184,32 @@ function DashboardNavbar({ absolute, light, isMini }) {
         </SoftBox>
         {isMini ? null : (
           <SoftBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <SoftBox pr={1}>
-              <SoftInput
-                placeholder="Type here..."
-                icon={{ component: "search", direction: "left" }}
-              />
-            </SoftBox>
-            <SoftBox color={light ? "white" : "inherit"}>
-              <Link to="/authentication/sign-in">
-                <IconButton sx={navbarIconButton} size="small">
-                  <Icon
-                    sx={({ palette: { dark, white } }) => ({
-                      color: light ? white.main : dark.main,
-                    })}
-                  >
-                    account_circle
-                  </Icon>
-                  <SoftTypography
-                    variant="button"
-                    fontWeight="medium"
-                    color={light ? "white" : "dark"}
-                  >
-                    Sign in
-                  </SoftTypography>
-                </IconButton>
-              </Link>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarMobileMenu}
-                onClick={handleMiniSidenav}
+            {/* Logout Button */}
+            <IconButton sx={navbarIconButton} size="small" onClick={handleLogout}>
+              <Icon
+                sx={({ palette: { dark, white } }) => ({
+                  color: light ? white.main : dark.main,
+                })}
               >
-                <Icon className={light ? "text-white" : "text-dark"}>
-                  {miniSidenav ? "menu_open" : "menu"}
-                </Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarIconButton}
-                onClick={handleConfiguratorOpen}
-              >
-                <Icon>settings</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarIconButton}
-                aria-controls="notification-menu"
-                aria-haspopup="true"
-                variant="contained"
-                onClick={handleOpenMenu}
-              >
-                <Icon className={light ? "text-white" : "text-dark"}>notifications</Icon>
-              </IconButton>
-              {renderMenu()}
-            </SoftBox>
+                logout
+              </Icon>
+              <SoftTypography variant="button" fontWeight="medium" color={light ? "white" : "dark"}>
+                Logout
+              </SoftTypography>
+            </IconButton>
+
+            {/* Mobile Menu Toggle (side nav open/close) */}
+            <IconButton
+              size="small"
+              color="inherit"
+              sx={navbarMobileMenu}
+              onClick={handleMiniSidenav}
+            >
+              <Icon className={light ? "text-white" : "text-dark"}>
+                {miniSidenav ? "menu_open" : "menu"}
+              </Icon>
+            </IconButton>
+            {renderMenu()}
           </SoftBox>
         )}
       </Toolbar>
