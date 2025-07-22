@@ -107,7 +107,7 @@ const EventsCalendar = () => {
         <Box sx={{ display: "flex", justifyContent: "flex-end", marginBottom: 2 }}>
           <Button
             variant="contained"
-            onClick={() => navigate("/add-event")}
+            onClick={() => navigate("/events/add-event")}
             className="add-usr-button"
           >
             Add Event
@@ -158,7 +158,7 @@ const EventsCalendar = () => {
               Close
             </Button>
             <Button
-              onClick={() => navigate(`/edit-event/${selectedEvent.id}`)}
+              onClick={() => navigate(`/events/edit-event/${selectedEvent.id}`)}
               variant="contained"
               className="add-usr-button"
             >

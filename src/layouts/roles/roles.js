@@ -62,7 +62,7 @@ const ManageRoles = () => {
       const response = await axios.get("http://localhost:4000/api/roles", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setRows(response.data);
+      setRows(response.data.filter((userRole) => userRole.id !== 1));
     } catch (error) {
       console.error("Unable to get roles", error);
     }

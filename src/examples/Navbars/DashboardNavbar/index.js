@@ -71,7 +71,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
     if (!isNaN(segment)) {
       return "Details"; // Or return null to skip
     }
-    return segment.replace("-", " ");
+    return segment;
   });
   useEffect(() => {
     // Setting the navbar type

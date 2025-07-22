@@ -29,35 +29,36 @@ const routes = [
     key: "signin",
     route: "/authentication/sign-in",
     component: <SignIn />,
+    access: "public",
   },
   {
     key: "addUser",
-    route: "/add-user",
+    route: "/users/add-user",
     component: <AddUser />,
   },
   {
     key: "editUser",
-    route: "/edit-user/:id",
+    route: "/users/edit-user/:id",
     component: <EditUser />,
   },
   {
     key: "addTask",
-    route: "/add-task",
+    route: "/tasks/add-task",
     component: <AddTask />,
   },
   {
     key: "addPress",
-    route: "/add-press",
+    route: "/press-release/add-press",
     component: <AddPressRelease />,
   },
   {
     key: "addEvents",
-    route: "/add-event",
+    route: "/events/add-event",
     component: <AddEvent />,
   },
   {
     key: "editEvent",
-    route: "/edit-event/:id",
+    route: "/events/edit-event/:id",
     component: <EditEvent />,
   },
   {

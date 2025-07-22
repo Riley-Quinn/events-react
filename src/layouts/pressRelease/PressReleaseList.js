@@ -172,7 +172,7 @@ const PressReleaseList = () => {
           <SoftButton
             variant="gradient"
             className="add-usr-button"
-            onClick={() => navigate(`/add-press`)}
+            onClick={() => navigate(`/press-release/add-press`)}
           >
             Add Press Release Note
           </SoftButton>

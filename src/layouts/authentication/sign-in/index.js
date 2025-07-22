@@ -51,10 +51,11 @@ function SignIn() {
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("permissions", JSON.stringify(permissions));
       ability.update(defineAbilityFor(permissions));
+      window.location.reload();
       navigate("/dashboard", { replace: true });
       fetchSuccess(res?.data?.message);
     } catch (err) {
-      console.log("err", err);
+      console.error("Error", err);
       fetchError(err?.response?.data?.message || "Login failed. Please try again.");
     }
   };

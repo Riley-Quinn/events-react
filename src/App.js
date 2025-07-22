@@ -48,13 +48,15 @@ import { useSoftUIController, setMiniSidenav, setOpenConfigurator } from "contex
 // Images
 import brand from "assets/images/logo-ct.png";
 import ProtectedRoute from "protectedRoute/protectedRoute";
+import { useAuthUser } from "contexts/userContext";
+import SignIn from "layouts/authentication/sign-in";
 export default function App() {
   const [controller, dispatch] = useSoftUIController();
   const { miniSidenav, direction, layout, openConfigurator, sidenavColor } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
-
+  const { user, userLoading } = useAuthUser();
   // Cache for the rtl
   useMemo(() => {
     const cacheRtl = createCache({
@@ -160,10 +162,16 @@ export default function App() {
         </>
       )}
       {layout === "vr" && <Configurator />}
-      <Routes>
-        {getRoutes(routes)}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
-      </Routes>
+      {!user || userLoading ? (
+        <Routes>
+          <Route path="*" element={<SignIn />} />
+        </Routes>
+      ) : (
+        <Routes>
+          {getRoutes(routes.filter((route) => route?.access !== "public"))}
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      )}
     </ThemeProvider>
   );
 }
