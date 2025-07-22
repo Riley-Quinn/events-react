@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState, useEffect, useCallback } from "react";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import authAxios from "authAxios";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -53,9 +54,7 @@ const UsersList = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/auth/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authAxios.get("/auth/users");
       setRows(response.data);
     } catch (error) {
       console.error("Unable to get users", error);
@@ -145,7 +144,7 @@ const UsersList = () => {
           const user = rows[dataIndex];
           return (
             <>
-              <IconButton color="primary" onClick={() => navigate(`/edit-user/${user.id}`)}>
+              <IconButton color="primary" onClick={() => navigate(`/users/edit-user/${user.id}`)}>
                 <EditIcon />
               </IconButton>
               <IconButton color="error" onClick={() => handleDeleteClick(user.id)}>
@@ -166,7 +165,7 @@ const UsersList = () => {
           <SoftButton
             variant="gradient"
             color="info"
-            onClick={() => navigate(`/add-user`)}
+            onClick={() => navigate(`/users/add-user`)}
             className="add-usr-button"
           >
             Add User

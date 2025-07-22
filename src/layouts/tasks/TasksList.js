@@ -175,7 +175,7 @@ const TasksList = () => {
           <SoftButton
             variant="gradient"
             className="add-usr-button"
-            onClick={() => navigate(`/add-task`)}
+            onClick={() => navigate(`/tasks/add-task`)}
           >
             Add Task
           </SoftButton>
