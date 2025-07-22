@@ -52,3 +52,12 @@ table {
     }
   }
 }
+.rbc-ellipsis,
+.rbc-show-more,
+.rbc-row-segment .rbc-event-content,
+.rbc-event-label {
+  font-size: 12px;
+}
+.MuiList-root.MuiList-padding {
+  padding-bottom: 20px;
+}

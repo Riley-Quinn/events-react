@@ -20,5 +20,5 @@ export function useAbility() {
   if (!ability) {
     throw new Error("useAbility must be used within AbilityProvider");
   }
-  return ability; // ✅ Return the ability directly, not inside { ability }
+  return ability;
 }

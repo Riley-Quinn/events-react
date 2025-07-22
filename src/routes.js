@@ -18,6 +18,11 @@ import PressReleaseList from "layouts/pressRelease/PressReleaseList";
 import AddPressRelease from "layouts/pressRelease/AddPressRelease";
 import NoWebAccess from "NoWebAccessPage";
 import EditUser from "layouts/users/EditUser";
+import Birthdays from "layouts/birthdays/Birthdays";
+import SpecialDays from "layouts/specialDays/SpecialDays";
+import EventsCalendar from "layouts/events/EventsList";
+import AddEvent from "layouts/events/AddEvents";
+import EditEvent from "layouts/events/EditEvent";
 
 const routes = [
   {
@@ -44,6 +49,16 @@ const routes = [
     key: "addPress",
     route: "/add-press",
     component: <AddPressRelease />,
+  },
+  {
+    key: "addEvents",
+    route: "/add-event",
+    component: <AddEvent />,
+  },
+  {
+    key: "editEvent",
+    route: "/edit-event/:id",
+    component: <EditEvent />,
   },
   {
     key: "no-web-access",
@@ -111,6 +126,33 @@ const routes = [
     route: "/press-release",
     icon: <CreditCard size="12px" />,
     component: <PressReleaseList />,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Birthdays",
+    key: "birthdays",
+    route: "/birthdays",
+    icon: <CreditCard size="12px" />,
+    component: <Birthdays />,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Special Days",
+    key: "special-days",
+    route: "/special-days",
+    icon: <CreditCard size="12px" />,
+    component: <SpecialDays />,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Events",
+    key: "events",
+    route: "/events",
+    icon: <CreditCard size="12px" />,
+    component: <EventsCalendar />,
     noCollapse: true,
   },
 ];
