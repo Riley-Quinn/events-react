@@ -66,9 +66,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const location = useLocation();
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const pathSegments = location.pathname.split("/").slice(1);
   const route = pathSegments.map((segment) => {
-    if (!isNaN(segment)) {
+    if (!isNaN(segment) || uuidRegex.test(segment)) {
       return "Details"; // Or return null to skip
     }
     return segment;

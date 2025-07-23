@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  TextField,
-  FormControl,
-  Grid,
-  InputAdornment,
-  IconButton,
-  Button,
-  Autocomplete,
-} from "@mui/material";
+import { Card, TextField, FormControl, Grid, Autocomplete } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { useParams, useNavigate } from "react-router-dom";
 import SoftButton from "components/SoftButton";
 import SoftTypography from "components/SoftTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import authAxios from "authAxios";
+import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import { useFetchUsers } from "contexts/fetchUsersContext";
 import { useAuthUser } from "contexts/userContext";
 
@@ -25,20 +16,23 @@ const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   description: Yup.string().required("Description is required"),
   location: Yup.string().required("Location is required"),
-  category_id: Yup.number().typeError("Category must be selected").required("Category is required"),
+  category_id: Yup.number().required("Category is required"),
   assignee_id: Yup.string().required("Assignee is required"),
   sub_category_id: Yup.number().nullable(),
 });
 
-const AddTask = () => {
-  const { fetchError, fetchSuccess } = useSnackbar();
+const EditTask = () => {
+  const { fetchSuccess, fetchError } = useSnackbar();
   const { user } = useAuthUser();
-  const navigate = useNavigate();
   const { usersList } = useFetchUsers();
-  const [submitting, setSubmitting] = useState(false);
+  const { task_id } = useParams(); // task ID from URL
+  const navigate = useNavigate();
+
+  const [initialValues, setInitialValues] = useState(null);
   const [category, setCategory] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -46,13 +40,36 @@ const AddTask = () => {
         const res = await authAxios.get("/categories");
         setCategory(res.data.list);
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        alert("Unauthorized or failed to fetch categories");
+        fetchError("Failed to fetch categories");
+      }
+    };
+
+    const fetchTaskDetails = async () => {
+      try {
+        const res = await authAxios.get(`/tasks/${task_id}`);
+        const task = res.data;
+
+        setInitialValues({
+          title: task?.title,
+          description: task?.description,
+          location: task?.location,
+          category_id: task?.category_id,
+          sub_category_id: task?.sub_category_id || null,
+          assignee_id: task?.assignee_id,
+        });
+
+        setSelectedCategoryId(task.category_id);
+      } catch (err) {
+        console.error("Error", err);
+        fetchError("Failed to fetch task details");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchCategories();
-  }, []);
+    fetchTaskDetails();
+  }, [task_id, fetchError]);
 
   useEffect(() => {
     const fetchSubcategories = async () => {
@@ -61,51 +78,42 @@ const AddTask = () => {
         const res = await authAxios.get(`/sub-category/category/${selectedCategoryId}`);
         setSubcategories(res.data?.list || []);
       } catch (err) {
-        console.error("Failed to fetch subcategories:", err);
+        fetchError("Failed to fetch subcategories");
       }
     };
+
     fetchSubcategories();
-  }, [selectedCategoryId]);
+  }, [selectedCategoryId, fetchError]);
+
+  if (loading || !initialValues) return null;
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <Card style={{ padding: "30px", width: "100%", borderRadius: "8px" }}>
         <SoftTypography variant="h5" style={{ marginBottom: "18px" }}>
-          Add New Task
+          Edit Task
         </SoftTypography>
         <Formik
-          initialValues={{
-            title: "",
-            description: "",
-            location: "",
-            assignee_id: null,
-            category_id: null,
-            sub_category_id: null,
-            status_id: 1,
-          }}
+          initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={async (values, { setFieldError }) => {
-            setSubmitting(true);
-
-            const taskData = {
-              title: values.title,
-              description: values.description,
-              location: values.location,
-              assignee_id: values.assignee_id,
-              category_id: values.category_id,
-              sub_category_id: values.sub_category_id,
-              status_id: 1,
-            };
-
+          enableReinitialize
+          onSubmit={async (values) => {
             try {
-              const res = await authAxios.post("/tasks", taskData);
+              const updatedData = {
+                title: values.title,
+                description: values.description,
+                location: values.location,
+                assignee_id: values.assignee_id,
+                category_id: values.category_id,
+                sub_category_id: values.sub_category_id,
+              };
+
+              const res = await authAxios.put(`/tasks/${task_id}`, updatedData);
+              fetchSuccess(res?.data?.message || "Task updated");
               navigate("/tasks");
-              fetchSuccess(res?.data?.message);
             } catch (err) {
-              fetchError("Failed to add task", err);
-            } finally {
-              setSubmitting(false);
+              fetchError("Failed to update task");
             }
           }}
         >
@@ -128,6 +136,7 @@ const AddTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -144,6 +153,7 @@ const AddTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -160,6 +170,7 @@ const AddTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -175,17 +186,15 @@ const AddTask = () => {
                         const categoryId = value ? Number(value.category_id) : null;
                         setFieldValue("category_id", categoryId);
                         setSelectedCategoryId(categoryId);
-                        setFieldValue("sub_category_id", null); // Reset on category change
+                        setFieldValue("sub_category_id", null);
                       }}
                       value={
-                        category.find(
-                          (cat) => Number(cat.category_id) === Number(values.category_id)
-                        ) || null
+                        category.find((cat) => Number(cat.category_id) === values.category_id) ||
+                        null
                       }
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          name="category_id"
                           variant="outlined"
                           error={!!errors.category_id && touched.category_id}
                           helperText={touched.category_id && errors.category_id}
@@ -194,11 +203,12 @@ const AddTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 {values.category_id && subcategories.length > 0 && (
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
                       <SoftTypography component="label" variant="caption" fontWeight="bold">
-                        Subcategories
+                        Subcategory
                       </SoftTypography>
                       <Autocomplete
                         options={subcategories}
@@ -221,7 +231,6 @@ const AddTask = () => {
                           <TextField
                             {...params}
                             variant="outlined"
-                            name="sub_category_id"
                             error={!!errors.sub_category_id && touched.sub_category_id}
                             helperText={touched.sub_category_id && errors.sub_category_id}
                           />
@@ -230,10 +239,11 @@ const AddTask = () => {
                     </FormControl>
                   </Grid>
                 )}
+
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
-                      Assigne
+                      Assignee
                     </SoftTypography>
                     <Autocomplete
                       options={usersList}
@@ -256,7 +266,6 @@ const AddTask = () => {
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          name="assignee_id"
                           variant="outlined"
                           error={!!errors.assignee_id && touched.assignee_id}
                           helperText={touched.assignee_id && errors.assignee_id}
@@ -266,27 +275,21 @@ const AddTask = () => {
                   </FormControl>
                 </Grid>
               </Grid>
-              <Grid item xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item>
-                    <SoftButton
-                      variant="gradient"
-                      className="add-usr-button"
-                      type="submit"
-                      disabled={submitting}
-                    >
-                      Save
-                    </SoftButton>
-                  </Grid>
-                  <Grid item>
-                    <SoftButton
-                      variant="gradient"
-                      className="cancel-button"
-                      onClick={() => navigate(`/tasks`)}
-                    >
-                      Cancel
-                    </SoftButton>
-                  </Grid>
+
+              <Grid container spacing={2} mt={2}>
+                <Grid item>
+                  <SoftButton type="submit" variant="gradient">
+                    Update
+                  </SoftButton>
+                </Grid>
+                <Grid item>
+                  <SoftButton
+                    variant="gradient"
+                    color="secondary"
+                    onClick={() => navigate("/tasks")}
+                  >
+                    Cancel
+                  </SoftButton>
                 </Grid>
               </Grid>
             </Form>
@@ -297,4 +300,4 @@ const AddTask = () => {
   );
 };
 
-export default AddTask;
+export default EditTask;

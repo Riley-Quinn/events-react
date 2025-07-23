@@ -12,6 +12,9 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Autocomplete from "@mui/material/Autocomplete";
 import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import { useAuthUser } from "contexts/userContext";
+import { useFetchUsers } from "contexts/fetchUsersContext";
+import authAxios from "authAxios";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
@@ -21,19 +24,16 @@ const validationSchema = Yup.object({
 
 const EditPressRelease = () => {
   const { id } = useParams();
+  const { user } = useAuthUser();
+  const { usersList } = useFetchUsers();
   const navigate = useNavigate();
   const { fetchError, fetchSuccess } = useSnackbar();
-
   const [press, setPress] = useState(null);
-  const [assignees, setAssignees] = useState([]);
 
   useEffect(() => {
     const fetchPress = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:4000/api/press-release/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await authAxios.get(`/press-release/${id}`);
         setPress(res.data);
       } catch (err) {
         fetchError("Failed to fetch press release", err);
@@ -41,21 +41,6 @@ const EditPressRelease = () => {
     };
     fetchPress();
   }, [id, fetchError]);
-
-  useEffect(() => {
-    const fetchAssignees = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:4000/api/auth/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAssignees(res.data);
-      } catch (err) {
-        fetchError("Failed to fetch assignees", err);
-      }
-    };
-    fetchAssignees();
-  }, [fetchError]);
 
   if (!press) return <div>Loading...</div>;
 
@@ -112,10 +97,20 @@ const EditPressRelease = () => {
                       Assignee
                     </SoftTypography>
                     <Autocomplete
-                      options={assignees}
+                      options={usersList}
                       getOptionLabel={(option) => option.name}
-                      value={assignees.find((a) => a.id == values.assignee_id) || null}
+                      value={usersList.find((a) => a.id == values.assignee_id) || null}
                       onChange={(e, value) => setFieldValue("assignee_id", value ? value.id : "")}
+                      renderOption={(props, option) => {
+                        const isSelf = option.id === user?.id; // define this variable
+                        return (
+                          <li {...props}>
+                            <span style={{ fontWeight: isSelf ? "bold" : "normal" }}>
+                              {option.name} {isSelf && "(Self)"}
+                            </span>
+                          </li>
+                        );
+                      }}
                       renderInput={(params) => (
                         <TextField
                           {...params}

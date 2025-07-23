@@ -27,6 +27,8 @@ import SubCategoriesList from "layouts/subCategory/SubCategoryList";
 import AddSubCategory from "layouts/subCategory/AddSubCategory";
 import ViewEvent from "layouts/events/ViewEvent";
 import EditPressRelease from "layouts/pressRelease/EditPressRelease";
+import ViewTask from "layouts/tasks/ViewTask";
+import EditTask from "layouts/tasks/EditTask";
 
 const routes = [
   {
@@ -49,6 +51,16 @@ const routes = [
     key: "addTask",
     route: "/tasks/add-task",
     component: <AddTask />,
+  },
+  {
+    key: "addTask",
+    route: "/tasks/edit-task/:task_id",
+    component: <EditTask />,
+  },
+  {
+    key: "addTask",
+    route: "/tasks/view-task/:task_id",
+    component: <ViewTask />,
   },
   {
     key: "addPress",

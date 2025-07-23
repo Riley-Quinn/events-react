@@ -22,8 +22,9 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import SoftButton from "components/SoftButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import authAxios from "authAxios";
+import { Visibility } from "@mui/icons-material";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -58,9 +59,7 @@ const TasksList = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/tasks/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authAxios.get("/tasks/");
       setRows(response.data.list);
     } catch (error) {
       console.error("Unable to fetch tasks", error);
@@ -79,9 +78,7 @@ const TasksList = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      const res = await axios.delete(`http://localhost:4000/api/tasks/${selectedTaskId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.delete(`/tasks/${selectedTaskId}`);
       setDeleteDialogOpen(false);
       setSelectedTaskId(null);
       fetchData();
@@ -117,11 +114,9 @@ const TasksList = () => {
         Closed: 6,
       };
 
-      const res = await axios.put(
-        `http://localhost:4000/api/tasks/${selectedTask.task_id}/status`,
-        { status_id: statusMap[newStatus] },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await authAxios.put(`/tasks/${selectedTask.task_id}/status`, {
+        status_id: statusMap[newStatus],
+      });
 
       setEditDialogOpen(false);
       setSelectedTask(null);
@@ -154,9 +149,21 @@ const TasksList = () => {
           const task = rows[dataIndex];
           return (
             <>
-              <IconButton color="primary" onClick={() => handleEditClick(task)}>
+              <IconButton
+                color="primary"
+                onClick={() => navigate(`/tasks/view-task/${task.task_id}`)}
+              >
+                <Visibility />
+              </IconButton>
+              <IconButton
+                color="primary"
+                onClick={() => navigate(`/tasks/edit-task/${task.task_id}`)}
+              >
                 <EditIcon />
               </IconButton>
+              {/* <IconButton color="primary" onClick={() => handleEditClick(task)}>
+                <EditIcon />
+              </IconButton> */}
               <IconButton color="error" onClick={() => handleDeleteClick(task.task_id)}>
                 <DeleteIcon />
               </IconButton>

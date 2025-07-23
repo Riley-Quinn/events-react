@@ -17,12 +17,12 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import SoftBox from "components/SoftBox";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import SoftButton from "components/SoftButton";
-import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState, useEffect, useCallback } from "react";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import authAxios from "authAxios";
+import { useFetchUsers } from "contexts/fetchUsersContext";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -45,6 +45,7 @@ const options = {
 
 const UsersList = () => {
   const { fetchError, fetchSuccess } = useSnackbar();
+  const { setUsersList } = useFetchUsers();
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -55,6 +56,7 @@ const UsersList = () => {
   const fetchData = useCallback(async () => {
     try {
       const response = await authAxios.get("/auth/users");
+      setUsersList(response.data);
       setRows(response.data);
     } catch (error) {
       console.error("Unable to get users", error);
@@ -73,9 +75,7 @@ const UsersList = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      const res = await axios.delete(`http://localhost:4000/api/auth/users/${selectedUserId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.delete(`/auth/users/${selectedUserId}`);
       fetchSuccess(res.data.message);
       setDeleteDialogOpen(false);
       fetchData();
@@ -97,13 +97,7 @@ const UsersList = () => {
     setRows(updatedRows);
 
     try {
-      await axios.put(
-        `http://localhost:4000/api/auth/users/${user.id}`,
-        { is_active: isActive ? 1 : 0 },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await authAxios.put(`/auth/users/${user.id}`, { is_active: isActive ? 1 : 0 });
       fetchSuccess(`User ${isActive ? "Activated" : "Deactivated"} successfully`);
     } catch (error) {
       setRows(previousState); // Rollback in case of error
