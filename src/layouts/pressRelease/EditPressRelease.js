@@ -19,7 +19,7 @@ import authAxios from "authAxios";
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   notes: Yup.string().required("Notes are required"),
-  assignee_id: Yup.number().required("Assignee is required"),
+  assignee_id: Yup.string().required("Assignee is required"),
 });
 
 const EditPressRelease = () => {

@@ -154,9 +154,9 @@ const PressReleaseList = () => {
               <IconButton color="primary" onClick={() => navigate(`/edit-press/${press.press_id}`)}>
                 <EditIcon />
               </IconButton>
-              <IconButton color="primary" onClick={() => handleEditClick(press)}>
+              {/* <IconButton color="primary" onClick={() => handleEditClick(press)}>
                 <EditIcon />
-              </IconButton>
+              </IconButton> */}
               <IconButton color="error" onClick={() => handleDeleteClick(press.press_id)}>
                 <DeleteIcon />
               </IconButton>

@@ -12,7 +12,6 @@ export const FetchUsersProvider = ({ children }) => {
       setUsersList(res.data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
-      alert("Unauthorized or failed to fetch users");
     }
   }, []);
   return (
