@@ -23,6 +23,10 @@ import SpecialDays from "layouts/specialDays/SpecialDays";
 import EventsCalendar from "layouts/events/EventsList";
 import AddEvent from "layouts/events/AddEvents";
 import EditEvent from "layouts/events/EditEvent";
+import SubCategoriesList from "layouts/subCategory/SubCategoryList";
+import AddSubCategory from "layouts/subCategory/AddSubCategory";
+import ViewEvent from "layouts/events/ViewEvent";
+import EditPressRelease from "layouts/pressRelease/EditPressRelease";
 
 const routes = [
   {
@@ -57,9 +61,19 @@ const routes = [
     component: <AddEvent />,
   },
   {
-    key: "editEvent",
-    route: "/events/edit-event/:id",
-    component: <EditEvent />,
+    key: "addCategories",
+    route: "/Category/add-subcategory",
+    component: <AddSubCategory />,
+  },
+  {
+    key: "addCategories",
+    route: "/events/view/:id",
+    component: <ViewEvent />,
+  },
+  {
+    key: "editPressRelease",
+    route: "/edit-press/:id",
+    component: <EditPressRelease />,
   },
   {
     key: "no-web-access",
@@ -109,6 +123,15 @@ const routes = [
     route: "/categories",
     icon: <CreditCard size="12px" />,
     component: <CategoriesList />,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "SubCategories",
+    key: "sub-categories",
+    route: "/sub-categories",
+    icon: <CreditCard size="12px" />,
+    component: <SubCategoriesList />,
     noCollapse: true,
   },
   {

@@ -1,5 +1,7 @@
+//categoriesList.js
+
 import * as React from "react";
-import { Dialog, DialogTitle, DialogContent, Card } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, Card, IconButton } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import MUIDataTable from "mui-datatables";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -10,6 +12,9 @@ import axios from "axios";
 import Switch from "@mui/material/Switch";
 import AddCategory from "./AddCategories";
 import dayjs from "dayjs";
+import { Category } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -33,7 +38,7 @@ const options = {
 const CategoriesList = () => {
   const [categoryData, setCategoryData] = React.useState([]);
   const [isAddOpen, setIsAddOpen] = React.useState(false);
-
+  const [editCategory, setEditCategory] = React.useState(null);
   const fetchData = React.useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:4000/api/categories");
@@ -55,6 +60,17 @@ const CategoriesList = () => {
       fetchData();
     } catch (error) {
       console.error(error.response.data.error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      try {
+        await axios.delete(`http://localhost:4000/api/categories/${id}`);
+        fetchData();
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
     }
   };
 
@@ -89,8 +105,28 @@ const CategoriesList = () => {
         },
       },
     },
+    {
+      name: "Actions",
+      label: "Actions",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRenderLite: (dataIndex) => {
+          const row = categoryData[dataIndex];
+          return (
+            <>
+              <IconButton color="primary" onClick={() => setEditCategory(row)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton color="error" onClick={() => handleDelete(row.category_id)}>
+                <DeleteIcon />
+              </IconButton>
+            </>
+          );
+        },
+      },
+    },
   ];
-
   return (
     <>
       <DashboardLayout>
@@ -128,13 +164,23 @@ const CategoriesList = () => {
       </DashboardLayout>
 
       {/* Add Category Modal */}
-      <Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Category</DialogTitle>
+      <Dialog
+        open={isAddOpen || !!editCategory}
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditCategory(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{editCategory ? "Edit Category" : "Add New Category"}</DialogTitle>
         <DialogContent>
           <AddCategory
+            initialData={editCategory} // pass edit data (can be null)
             onClose={() => {
               setIsAddOpen(false);
-              fetchData(); // Refresh list after adding
+              setEditCategory(null);
+              fetchData(); // Refresh list after save/update
             }}
           />
         </DialogContent>

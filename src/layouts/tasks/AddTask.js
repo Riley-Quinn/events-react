@@ -1,3 +1,5 @@
+//AddTask.js --> 1
+
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -24,8 +26,9 @@ const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   description: Yup.string().required("Description is required"),
   location: Yup.string().required("Location is required"),
-  category_id: Yup.number().required("Category is required"),
+  category_id: Yup.number().typeError("Category must be selected").required("Category is required"),
   assignee_id: Yup.number().required("Assignee is required"),
+  sub_category_id: Yup.number().nullable(),
 });
 
 const AddTask = () => {
@@ -34,6 +37,8 @@ const AddTask = () => {
   const [submitting, setSubmitting] = useState(false);
   const [users, setUsers] = useState([]);
   const [category, setCategory] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -69,6 +74,26 @@ const AddTask = () => {
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    const fetchSubcategories = async () => {
+      if (!selectedCategoryId) return;
+      try {
+        const res = await axios.get(
+          `http://localhost:4000/api/sub-category/category/${selectedCategoryId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setSubcategories(res.data?.list || []);
+      } catch (err) {
+        console.error("Failed to fetch subcategories:", err);
+      }
+    };
+    fetchSubcategories();
+  }, [selectedCategoryId]);
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -81,8 +106,9 @@ const AddTask = () => {
             title: "",
             description: "",
             location: "",
-            assignee_id: "",
-            category_id: "",
+            assignee_id: null,
+            category_id: null,
+            sub_category_id: null,
             status_id: 1,
           }}
           validationSchema={validationSchema}
@@ -95,6 +121,7 @@ const AddTask = () => {
               location: values.location,
               assignee_id: values.assignee_id,
               category_id: values.category_id,
+              sub_category_id: values.sub_category_id,
               status_id: 1,
             };
 
@@ -173,12 +200,19 @@ const AddTask = () => {
                       options={category}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) =>
-                        option.category_id === value.category_id
+                        Number(option.category_id) === Number(value.category_id)
                       }
                       onChange={(e, value) => {
-                        setFieldValue("category_id", value ? value.category_id : "");
+                        const categoryId = value ? Number(value.category_id) : null;
+                        setFieldValue("category_id", categoryId);
+                        setSelectedCategoryId(categoryId);
+                        setFieldValue("sub_category_id", null); // Reset on category change
                       }}
-                      value={category.find((cat) => cat.category_id === values.category_id) || null}
+                      value={
+                        category.find(
+                          (cat) => Number(cat.category_id) === Number(values.category_id)
+                        ) || null
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -191,6 +225,42 @@ const AddTask = () => {
                     />
                   </FormControl>
                 </Grid>
+                {values.category_id && subcategories.length > 0 && (
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <SoftTypography component="label" variant="caption" fontWeight="bold">
+                        Subcategories
+                      </SoftTypography>
+                      <Autocomplete
+                        options={subcategories}
+                        getOptionLabel={(option) => option?.name || ""}
+                        isOptionEqualToValue={(option, value) =>
+                          Number(option?.sub_category_id) === Number(value?.sub_category_id)
+                        }
+                        onChange={(e, value) => {
+                          setFieldValue(
+                            "sub_category_id",
+                            value ? Number(value.sub_category_id) : null
+                          );
+                        }}
+                        value={
+                          subcategories.find(
+                            (item) => item.sub_category_id === values.sub_category_id
+                          ) || null
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            variant="outlined"
+                            name="sub_category_id"
+                            error={!!errors.sub_category_id && touched.sub_category_id}
+                            helperText={touched.sub_category_id && errors.sub_category_id}
+                          />
+                        )}
+                      />
+                    </FormControl>
+                  </Grid>
+                )}
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -199,11 +269,15 @@ const AddTask = () => {
                     <Autocomplete
                       options={users}
                       getOptionLabel={(option) => option.name}
-                      isOptionEqualToValue={(option, value) => option.id === value.id}
+                      isOptionEqualToValue={(option, value) =>
+                        Number(option.id) === Number(value.id)
+                      }
                       onChange={(e, value) => {
-                        setFieldValue("assignee_id", value ? value.id : "");
+                        setFieldValue("assignee_id", value ? Number(value.id) : null);
                       }}
-                      value={users.find((user) => user.id === values.assignee_id) || null}
+                      value={
+                        users.find((user) => Number(user.id) === Number(values.assignee_id)) || null
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}

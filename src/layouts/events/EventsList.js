@@ -171,6 +171,13 @@ const EventsCalendar = () => {
             >
               Delete
             </Button>
+            <Button
+              onClick={() => navigate(`/events/view/${selectedEvent.id}`)}
+              variant="contained"
+              color="primary"
+            >
+              View
+            </Button>
           </DialogActions>
         </Dialog>
 

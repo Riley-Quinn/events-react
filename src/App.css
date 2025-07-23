@@ -61,3 +61,11 @@ table {
 .MuiList-root.MuiList-padding {
   padding-bottom: 20px;
 }
+.event_details h6 {
+  font-size: 1rem;
+}
+.details {
+  background-color: #eee;
+  padding: 8px;
+  border-radius: 8px;
+}

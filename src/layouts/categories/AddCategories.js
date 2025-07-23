@@ -1,3 +1,5 @@
+//AddCategories.js
+
 import React, { useState } from "react";
 import { TextField, FormControl, Grid } from "@mui/material";
 import { Formik, Form } from "formik";
@@ -12,27 +14,42 @@ const validationSchema = Yup.object({
 });
 
 // eslint-disable-next-line react/prop-types
-const AddCategory = ({ onClose }) => {
+const AddCategory = ({ onClose, initialData = null }) => {
   const [submitting, setSubmitting] = useState(false);
   const { fetchError, fetchSuccess } = useSnackbar();
   return (
     <Formik
       initialValues={{
-        name: "",
+        name: initialData?.name || "",
       }}
       validationSchema={validationSchema}
       onSubmit={async (values) => {
         setSubmitting(true);
         try {
-          const res = await axios.post("http://localhost:4000/api/categories", values, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+          if (initialData) {
+            // Edit mode
+            const res = await axios.put(
+              `http://localhost:4000/api/categories/${initialData.category_id}`,
+              values,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+            fetchSuccess(res?.data?.message || "Category updated successfully");
+          } else {
+            // Add mode
+            const res = await axios.post("http://localhost:4000/api/categories", values, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            });
+            fetchSuccess(res?.data?.message || "Category added successfully");
+          }
           if (onClose) onClose();
-          fetchSuccess(res?.data?.message);
         } catch (err) {
-          fetchError("Failed to add category", err);
+          fetchError("Failed to save category", err);
         } finally {
           setSubmitting(false);
         }
@@ -65,7 +82,7 @@ const AddCategory = ({ onClose }) => {
                 type="submit"
                 disabled={submitting}
               >
-                Save
+                {initialData ? "Update" : "Save"}
               </SoftButton>
               <SoftButton variant="gradient" className="add-usr-button" onClick={onClose}>
                 Cancel
