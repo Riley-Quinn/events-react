@@ -22,6 +22,7 @@ import { defineAbilityFor } from "./casl/defineAbility";
 import { SoftUIControllerProvider } from "context";
 import { SnackbarProvider } from "components/AlertMessages/SnackbarContext";
 import { AuthUserProvider } from "contexts/userContext";
+import { FetchUsersProvider } from "contexts/fetchUsersContext";
 
 const permissions = JSON.parse(localStorage.getItem("permissions")) || [];
 const abilityRules = defineAbilityFor(permissions);
@@ -30,11 +31,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <AbilityProvider permissions={abilityRules}>
     <BrowserRouter>
       <AuthUserProvider>
-        <SoftUIControllerProvider>
-          <SnackbarProvider>
-            <App />
-          </SnackbarProvider>
-        </SoftUIControllerProvider>
+        <FetchUsersProvider>
+          <SoftUIControllerProvider>
+            <SnackbarProvider>
+              <App />
+            </SnackbarProvider>
+          </SoftUIControllerProvider>
+        </FetchUsersProvider>
       </AuthUserProvider>
     </BrowserRouter>
   </AbilityProvider>

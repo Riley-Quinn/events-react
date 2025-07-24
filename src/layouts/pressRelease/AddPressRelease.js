@@ -16,45 +16,29 @@ import SoftTypography from "components/SoftTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import { useNavigate } from "react-router-dom";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import authAxios from "authAxios";
+import { useFetchUsers } from "contexts/fetchUsersContext";
+import { useAuthUser } from "contexts/userContext";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   notes: Yup.string().required("Note is required"),
-  assignee_id: Yup.number().required("Assignee is required"),
+  assignee_id: Yup.string().required("Assignee is required"),
 });
 
 const AddPressRelease = () => {
   const { fetchError, fetchSuccess } = useSnackbar();
+  const { user } = useAuthUser();
+  const { usersList } = useFetchUsers();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await axios.get("http://localhost:4000/api/auth/users", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        setUsers(res.data);
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-        alert("Unauthorized or failed to fetch users");
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <Card style={{ padding: "30px", width: "100%", borderRadius: "8px" }}>
         <SoftTypography variant="h5" style={{ marginBottom: "18px" }}>
-          Add New Task
+          Add Press Release
         </SoftTypography>
         <Formik
           initialValues={{
@@ -75,19 +59,11 @@ const AddPressRelease = () => {
             };
 
             try {
-              const res = await axios.post(
-                "http://localhost:4000/api/press-release/create",
-                pressData,
-                {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                  },
-                }
-              );
+              const res = await authAxios.post("/press-release/create", pressData);
               navigate("/press-release");
               fetchSuccess(res?.data?.message);
             } catch (err) {
-              fetchError("Failed to add task", err);
+              fetchError("Failed to add press release", err);
             } finally {
               setSubmitting(false);
             }
@@ -118,13 +94,23 @@ const AddPressRelease = () => {
                       Assigne
                     </SoftTypography>
                     <Autocomplete
-                      options={users}
+                      options={usersList}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) => option.id === value.id}
                       onChange={(e, value) => {
                         setFieldValue("assignee_id", value ? value.id : "");
                       }}
-                      value={users.find((user) => user.id === values.assignee_id) || null}
+                      value={usersList.find((user) => user.id === values.assignee_id) || null}
+                      renderOption={(props, option) => {
+                        const isSelf = option.id === user?.id; // define this variable
+                        return (
+                          <li {...props}>
+                            <span style={{ fontWeight: isSelf ? "bold" : "normal" }}>
+                              {option.name} {isSelf && "(Self)"}
+                            </span>
+                          </li>
+                        );
+                      }}
                       renderInput={(params) => (
                         <TextField
                           {...params}
@@ -175,7 +161,7 @@ const AddPressRelease = () => {
                     <SoftButton
                       variant="gradient"
                       className="cancel-button"
-                      onClick={() => navigate(`/tasks`)}
+                      onClick={() => navigate(`/press-release`)}
                     >
                       Cancel
                     </SoftButton>
