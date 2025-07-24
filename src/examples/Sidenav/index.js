@@ -42,7 +42,7 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 
 // Soft UI Dashboard React context
 import { useSoftUIController, setMiniSidenav } from "context";
-import logo from "../../assets/images/swami.png";
+import Profile from "../../assets/images/Profile.png";
 import { useAbility } from "contexts/AbilityContext";
 import { filterRoutesByPermission } from "permissionRoutes";
 function Sidenav({ color, brandName, routes, bgColor = "#1E1E2F", ...rest }) {
@@ -149,7 +149,7 @@ function Sidenav({ color, brandName, routes, bgColor = "#1E1E2F", ...rest }) {
           </SoftTypography>
         </SoftBox>
         <SoftBox display="flex" justifyContent="center" mb={3}>
-          <SoftBox component="img" src={logo} alt="Logo" width="120px" height="120px" />
+          <SoftBox component="img" src={Profile} alt="Profile" width="120px" height="120px" />
         </SoftBox>
       </SoftBox>
       <Divider />

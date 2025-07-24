@@ -60,6 +60,7 @@ const TasksList = () => {
   const fetchData = useCallback(async () => {
     try {
       const response = await authAxios.get("/tasks/");
+      console.log("Full response from /tasks:", response);
       setRows(response.data.list);
     } catch (error) {
       console.error("Unable to fetch tasks", error);

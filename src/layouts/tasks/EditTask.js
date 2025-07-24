@@ -19,6 +19,8 @@ const validationSchema = Yup.object({
   category_id: Yup.number().required("Category is required"),
   assignee_id: Yup.string().required("Assignee is required"),
   sub_category_id: Yup.number().nullable(),
+  status_id: Yup.number().required("Status is required"),
+  estimated_date: Yup.date().nullable(),
 });
 
 const EditTask = () => {
@@ -33,6 +35,25 @@ const EditTask = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [statuses, setStatuses] = useState([]);
+
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        const res = await authAxios.get("/tasks/status/all", {
+          params: {
+            type: "task",
+          },
+        });
+        setStatuses(res.data.list || []);
+      } catch (err) {
+        fetchError("Failed to fetch statuses");
+      }
+    };
+
+    fetchStatuses();
+  }, [fetchError]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,6 +77,8 @@ const EditTask = () => {
           category_id: task?.category_id,
           sub_category_id: task?.sub_category_id || null,
           assignee_id: task?.assignee_id,
+          status_id: task?.status_id,
+          estimated_date: task?.estimated_date?.split("T")[0] || "",
         });
 
         setSelectedCategoryId(task.category_id);
@@ -107,6 +130,8 @@ const EditTask = () => {
                 assignee_id: values.assignee_id,
                 category_id: values.category_id,
                 sub_category_id: values.sub_category_id,
+                status_id: values.status_id,
+                estimated_date: values.estimated_date || null,
               };
 
               const res = await authAxios.put(`/tasks/${task_id}`, updatedData);
@@ -274,18 +299,62 @@ const EditTask = () => {
                     />
                   </FormControl>
                 </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Status
+                    </SoftTypography>
+                    <Autocomplete
+                      options={statuses}
+                      getOptionLabel={(option) => option?.status_name || ""}
+                      isOptionEqualToValue={(option, value) =>
+                        Number(option.status_id) === Number(value.status_id)
+                      }
+                      onChange={(e, value) => {
+                        setFieldValue("status_id", value ? value.status_id : null);
+                      }}
+                      value={statuses.find((item) => item.status_id === values.status_id) || null}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          error={!!errors.status_id && touched.status_id}
+                          helperText={touched.status_id && errors.status_id}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Estimated Date
+                    </SoftTypography>
+                    <TextField
+                      name="estimated_date"
+                      type="date"
+                      value={values.estimated_date}
+                      onChange={handleChange}
+                      variant="outlined"
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.estimated_date && touched.estimated_date}
+                      helperText={touched.estimated_date && errors.estimated_date}
+                    />
+                  </FormControl>
+                </Grid>
               </Grid>
 
               <Grid container spacing={2} mt={2}>
                 <Grid item>
-                  <SoftButton type="submit" variant="gradient">
+                  <SoftButton type="submit" variant="gradient" className="add-usr-button">
                     Update
                   </SoftButton>
                 </Grid>
                 <Grid item>
                   <SoftButton
                     variant="gradient"
-                    color="secondary"
+                    className="cancel-button"
                     onClick={() => navigate("/tasks")}
                   >
                     Cancel

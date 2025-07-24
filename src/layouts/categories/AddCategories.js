@@ -6,7 +6,7 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import SoftButton from "components/SoftButton";
 import SoftTypography from "components/SoftTypography";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const validationSchema = Yup.object({
@@ -28,23 +28,11 @@ const AddCategory = ({ onClose, initialData = null }) => {
         try {
           if (initialData) {
             // Edit mode
-            const res = await axios.put(
-              `http://localhost:4000/api/categories/${initialData.category_id}`,
-              values,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            );
+            const res = await authAxios.put(`/categories/${initialData.category_id}`, values);
             fetchSuccess(res?.data?.message || "Category updated successfully");
           } else {
             // Add mode
-            const res = await axios.post("http://localhost:4000/api/categories", values, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            });
+            const res = await authAxios.post("/categories", values);
             fetchSuccess(res?.data?.message || "Category added successfully");
           }
           if (onClose) onClose();

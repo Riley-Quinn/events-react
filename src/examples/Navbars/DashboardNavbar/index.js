@@ -27,6 +27,7 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import Icon from "@mui/material/Icon";
+import logo from "assets/images/swami.png";
 
 // Soft UI Dashboard React components
 import SoftBox from "components/SoftBox";
@@ -36,7 +37,7 @@ import SoftInput from "components/SoftInput";
 // Soft UI Dashboard React examples
 import Breadcrumbs from "examples/Breadcrumbs";
 import NotificationItem from "examples/Items/NotificationItem";
-import axios from "axios";
+import authAxios from "authAxios";
 // Custom styles for DashboardNavbar
 import {
   navbar,
@@ -149,13 +150,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.post(
-        "http://localhost:4000/api/auth/logout",
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await authAxios.post("/auth/logout", {});
 
       localStorage.removeItem("token");
       localStorage.removeItem("permissions");
@@ -185,6 +180,9 @@ function DashboardNavbar({ absolute, light, isMini }) {
         </SoftBox>
         {isMini ? null : (
           <SoftBox sx={(theme) => navbarRow(theme, { isMini })}>
+            <SoftBox display="flex" justifyContent="center" mb={3}>
+              <SoftBox component="img" src={logo} alt="Logo" width="100px" height="100px" />
+            </SoftBox>
             {/* Logout Button */}
             <IconButton sx={navbarIconButton} size="small" onClick={handleLogout}>
               <Icon
@@ -194,9 +192,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
               >
                 logout
               </Icon>
-              <SoftTypography variant="button" fontWeight="medium" color={light ? "white" : "dark"}>
-                Logout
-              </SoftTypography>
             </IconButton>
 
             {/* Mobile Menu Toggle (side nav open/close) */}

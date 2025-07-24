@@ -73,6 +73,11 @@ const routes = [
     component: <AddEvent />,
   },
   {
+    key: "editEvents",
+    route: "/events/edit-event/:id",
+    component: <EditEvent />,
+  },
+  {
     key: "addCategories",
     route: "/Category/add-subcategory",
     component: <AddSubCategory />,
@@ -175,7 +180,7 @@ const routes = [
   },
   {
     type: "collapse",
-    name: "Special Days",
+    name: "Important Days",
     key: "special-days",
     route: "/special-days",
     icon: <CreditCard size="12px" />,

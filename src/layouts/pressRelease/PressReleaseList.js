@@ -21,7 +21,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import SoftButton from "components/SoftButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const getMuiTheme = (theme) =>
@@ -57,9 +57,7 @@ const PressReleaseList = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/press-release/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authAxios.get("/press-release/");
       setRows(response.data);
     } catch (error) {
       console.error("Unable to fetch press releases", error);
@@ -78,9 +76,7 @@ const PressReleaseList = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      const res = await axios.delete(`http://localhost:4000/api/press-release/${selectedPressId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.delete(`/press-release/${selectedPressId}`);
       setDeleteDialogOpen(false);
       setSelectedPressId(null);
       fetchData();
@@ -116,11 +112,9 @@ const PressReleaseList = () => {
         Closed: 6,
       };
 
-      const res = await axios.put(
-        `http://localhost:4000/api/press-release/${selectedPress.press_id}/status`,
-        { status_id: statusMap[newStatus] },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await authAxios.put(`/press-release/${selectedPress.press_id}/status`, {
+        status_id: statusMap[newStatus],
+      });
 
       setEditDialogOpen(false);
       setSelectedPress(null);

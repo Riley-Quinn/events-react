@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import axios from "axios";
+import authAxios from "authAxios";
 import {
   Box,
   Typography,
@@ -23,7 +23,6 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const API_BASE = "http://localhost:4000";
 const MEDIA_BASE_URL = "https://d108ysp6ovb3mv.cloudfront.net";
 
 const ViewEvent = () => {
@@ -47,9 +46,7 @@ const ViewEvent = () => {
 
   const fetchEventDetails = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/events/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.get(`/events/${id}`);
       setEvent(res.data);
     } catch (err) {
       console.error("Error loading event", err);
@@ -58,9 +55,7 @@ const ViewEvent = () => {
 
   const fetchMedia = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/media/event/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.get(`/media/event/${id}`);
       setMedia(res.data);
     } catch (err) {
       console.error("Failed to load media", err);
@@ -72,12 +67,7 @@ const ViewEvent = () => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      await axios.post(`${API_BASE}/api/media/upload/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await authAxios.post(`/media/upload/${id}`, formData);
       setFile(null);
       fetchMedia();
     } catch (err) {
@@ -102,9 +92,7 @@ const ViewEvent = () => {
 
   const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`${API_BASE}/api/media/${selectedMediaId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await authAxios.delete(`/media/${selectedMediaId}`);
       fetchMedia();
     } catch (err) {
       console.error("Delete failed", err);
