@@ -7,7 +7,7 @@ import SoftTypography from "components/SoftTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const validationSchema = Yup.object({
@@ -50,11 +50,7 @@ const AddEvent = () => {
             };
 
             try {
-              const res = await axios.post("http://localhost:4000/api/events/create", eventData, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              });
+              const res = await authAxios.post("/events/create", eventData);
               navigate("/events");
               fetchSuccess(res?.data?.message || "Event created successfully!");
             } catch (err) {

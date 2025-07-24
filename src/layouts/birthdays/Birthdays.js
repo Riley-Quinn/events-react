@@ -5,7 +5,7 @@ import { format as formatDate } from "date-fns";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import axios from "axios";
+import authAxios from "authAxios";
 import {
   Dialog,
   DialogTitle,
@@ -45,9 +45,7 @@ const Birthdays = () => {
 
   const fetchBirthdays = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/birthdays/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.get("/birthdays/all");
 
       const birthdays = res.data.map((b) => {
         const date = new Date(b.birth_date);
@@ -72,9 +70,7 @@ const Birthdays = () => {
 
   const handleAddBirthday = async () => {
     try {
-      await axios.post("http://localhost:4000/api/birthdays/create", newBirthday, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await authAxios.post("/birthdays/create", newBirthday);
       setOpenAdd(false);
       setNewBirthday({ name: "", birth_date: "" });
       fetchBirthdays();
@@ -85,14 +81,10 @@ const Birthdays = () => {
 
   const handleUpdateBirthday = async () => {
     try {
-      await axios.put(
-        `http://localhost:4000/api/birthdays/${selectedBirthday.id}`,
-        {
-          name: selectedBirthday.name,
-          birth_date: selectedBirthday.birth_date,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await authAxios.put(`/birthdays/${selectedBirthday.id}`, {
+        name: selectedBirthday.name,
+        birth_date: selectedBirthday.birth_date,
+      });
       setEditOpen(false);
       fetchBirthdays();
     } catch (err) {
@@ -102,9 +94,7 @@ const Birthdays = () => {
 
   const handleDeleteBirthday = async () => {
     try {
-      await axios.delete(`http://localhost:4000/api/birthdays/${selectedBirthday.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await authAxios.delete(`/birthdays/${selectedBirthday.id}`);
       setEditOpen(false);
       setConfirmDeleteOpen(false);
       fetchBirthdays();

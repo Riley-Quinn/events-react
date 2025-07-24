@@ -6,7 +6,7 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import axios from "axios";
+import authAxios from "authAxios";
 import { Button, Box, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 
 const locales = {
@@ -35,9 +35,7 @@ const EventsCalendar = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/events/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.get("/events/all");
 
       const formattedEvents = res.data.map((event) => {
         const { date, time, title, id } = event;
@@ -85,9 +83,7 @@ const EventsCalendar = () => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:4000/api/events/${selectedEvent.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await authAxios.delete(`/events/${selectedEvent.id}`);
       setConfirmDelete(false);
       setOpenDialog(false);
       fetchEvents(); // Refresh events

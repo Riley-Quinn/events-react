@@ -10,11 +10,10 @@ import SoftTypography from "components/SoftTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Autocomplete from "@mui/material/Autocomplete";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import { useAuthUser } from "contexts/userContext";
 import { useFetchUsers } from "contexts/fetchUsersContext";
-import authAxios from "authAxios";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
@@ -29,6 +28,7 @@ const EditPressRelease = () => {
   const navigate = useNavigate();
   const { fetchError, fetchSuccess } = useSnackbar();
   const [press, setPress] = useState(null);
+  const [pressStatusOptions, setPressStatusOptions] = useState([]);
 
   useEffect(() => {
     const fetchPress = async () => {
@@ -41,6 +41,23 @@ const EditPressRelease = () => {
     };
     fetchPress();
   }, [id, fetchError]);
+
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        const res = await authAxios.get("/tasks/status/all", {
+          params: {
+            type: "press_release",
+          },
+        });
+        setPressStatusOptions(res.data?.list || []);
+      } catch (err) {
+        fetchError("Failed to fetch statuses", err);
+      }
+    };
+
+    fetchStatuses();
+  }, [fetchError]);
 
   if (!press) return <div>Loading...</div>;
 
@@ -57,14 +74,13 @@ const EditPressRelease = () => {
             title: press.title || "",
             notes: press.notes || "",
             assignee_id: press.assignee_id || "",
+            status_id: press.status_id || null,
           }}
           validationSchema={validationSchema}
           onSubmit={async (values) => {
             try {
               const token = localStorage.getItem("token");
-              await axios.put(`http://localhost:4000/api/press-release/${id}`, values, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              await authAxios.put(`/press-release/${id}`, values);
               fetchSuccess("Press release updated successfully");
               navigate("/press-release");
             } catch (err) {
@@ -140,15 +156,48 @@ const EditPressRelease = () => {
                     />
                   </FormControl>
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Status
+                    </SoftTypography>
+                    <Autocomplete
+                      options={pressStatusOptions}
+                      getOptionLabel={(option) => option.status_name}
+                      isOptionEqualToValue={(option, value) => option.status_id === value.status_id}
+                      onChange={(e, value) => {
+                        setFieldValue("status_id", value ? value.status_id : "");
+                      }}
+                      value={
+                        pressStatusOptions.find(
+                          (status) => status.status_id === values.status_id
+                        ) || null
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          name="status_id"
+                          variant="outlined"
+                          error={!!errors.status_id && touched.status_id}
+                          helperText={touched.status_id && errors.status_id}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                </Grid>
               </Grid>
               <Grid container spacing={2} sx={{ mt: 2 }}>
                 <Grid item>
-                  <SoftButton type="submit" variant="gradient">
+                  <SoftButton type="submit" variant="gradient" className="add-usr-button">
                     Save
                   </SoftButton>
                 </Grid>
                 <Grid item>
-                  <SoftButton variant="gradient" onClick={() => navigate("/press-release")}>
+                  <SoftButton
+                    variant="gradient"
+                    className="cancel-button"
+                    onClick={() => navigate("/press-release")}
+                  >
                     Cancel
                   </SoftButton>
                 </Grid>

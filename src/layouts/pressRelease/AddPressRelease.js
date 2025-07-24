@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import {
   Card,
   TextField,
@@ -25,6 +25,7 @@ const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   notes: Yup.string().required("Note is required"),
   assignee_id: Yup.string().required("Assignee is required"),
+  status_id: Yup.string().required("Status is required"),
 });
 
 const AddPressRelease = () => {
@@ -33,6 +34,24 @@ const AddPressRelease = () => {
   const { usersList } = useFetchUsers();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [pressStatusOptions, setPressStatusOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchPressStatuses = async () => {
+      try {
+        const res = await authAxios.get("/tasks/status/all", {
+          params: {
+            type: "press_release",
+          },
+        });
+        setPressStatusOptions(res.data?.list || []);
+      } catch (err) {
+        console.error("Failed to fetch task statuses", err);
+        setPressStatusOptions([]); // fallback
+      }
+    };
+    fetchPressStatuses();
+  }, [fetchError]);
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -45,7 +64,7 @@ const AddPressRelease = () => {
             title: "",
             notes: "",
             assignee_id: "",
-            status_id: 1,
+            status_id: null,
           }}
           validationSchema={validationSchema}
           onSubmit={async (values, { setFieldError }) => {
@@ -55,7 +74,7 @@ const AddPressRelease = () => {
               title: values.title,
               notes: values.notes,
               assignee_id: values.assignee_id,
-              status_id: 1,
+              status_id: values.status_id,
             };
 
             try {
@@ -141,6 +160,35 @@ const AddPressRelease = () => {
                       }}
                       error={!!errors.notes && touched.notes}
                       helperText={touched.notes && errors.notes}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Status
+                    </SoftTypography>
+                    <Autocomplete
+                      options={pressStatusOptions}
+                      getOptionLabel={(option) => option.status_name}
+                      isOptionEqualToValue={(option, value) => option.status_id === value.status_id}
+                      onChange={(e, value) => {
+                        setFieldValue("status_id", value ? value.status_id : "");
+                      }}
+                      value={
+                        pressStatusOptions.find(
+                          (status) => status.status_id === values.status_id
+                        ) || null
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          name="status_id"
+                          variant="outlined"
+                          error={!!errors.status_id && touched.status_id}
+                          helperText={touched.status_id && errors.status_id}
+                        />
+                      )}
                     />
                   </FormControl>
                 </Grid>

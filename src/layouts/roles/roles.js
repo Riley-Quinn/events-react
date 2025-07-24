@@ -19,7 +19,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import SoftBox from "components/SoftBox";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import SoftButton from "components/SoftButton";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import AddRole from "./AddRole";
 import Switch from "@mui/material/Switch";
@@ -59,9 +59,7 @@ const ManageRoles = () => {
 
   const fetchData = React.useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/roles", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await authAxios.get("/roles");
       setRows(response.data.filter((userRole) => userRole.id !== 1));
     } catch (error) {
       console.error("Unable to get roles", error);
@@ -86,13 +84,7 @@ const ManageRoles = () => {
     }
 
     try {
-      const res = await axios.put(
-        `http://localhost:4000/api/roles/${editingRole.id}`,
-        { name: editedName },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await authAxios.put(`/roles/${editingRole.id}`, { name: editedName });
 
       setRows((prevRows) =>
         prevRows.map((role) => (role.id === editingRole.id ? { ...role, name: editedName } : role))
@@ -111,12 +103,9 @@ const ManageRoles = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.put(
-        `http://localhost:4000/api/roles/${data?.id}`,
-        { is_active: isActive }, // true/false works fine if DB column is boolean/tinyint(1)
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await authAxios.put(
+        `/roles/${data?.id}`,
+        { is_active: isActive } // true/false works fine if DB column is boolean/tinyint(1)
       );
 
       fetchData();
@@ -131,9 +120,7 @@ const ManageRoles = () => {
   };
   const handleConfirmDelete = async () => {
     try {
-      const res = await axios.delete(`http://localhost:4000/api/roles/${selectedRoleId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.delete(`/roles/${selectedRoleId}`);
       fetchSuccess(res.data.message);
       setDeleteDialogOpen(false);
       fetchData();

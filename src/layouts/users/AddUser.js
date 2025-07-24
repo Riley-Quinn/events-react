@@ -17,8 +17,8 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import authAxios from "authAxios";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
@@ -48,11 +48,7 @@ const AddUser = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/roles", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const res = await authAxios.get("/roles");
         setRoles(res.data);
       } catch (err) {
         fetchError("Failed to fetch roles:", err);
@@ -91,15 +87,15 @@ const AddUser = () => {
               role_id: values.role_id,
             };
             try {
-              const res = await axios.post("http://localhost:4000/api/auth/register", userData, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              });
+              const res = await authAxios.post("/auth/register", userData);
               navigate("/users");
               fetchSuccess(res?.data?.message);
             } catch (err) {
-              fetchError("Failed to add user", err);
+              const errorMsg = err?.response?.data?.message || "Failed to add user";
+              fetchError(errorMsg);
+              if (err?.response?.status === 400 && errorMsg.includes("Email")) {
+                setFieldError("email", errorMsg);
+              }
             } finally {
               setSubmitting(false);
             }

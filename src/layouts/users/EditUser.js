@@ -8,9 +8,9 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import { useNavigate, useParams } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import Autocomplete from "@mui/material/Autocomplete";
+import authAxios from "authAxios";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
@@ -38,12 +38,8 @@ const EditUser = () => {
         const token = localStorage.getItem("token");
 
         const [rolesRes, userRes] = await Promise.all([
-          axios.get("http://localhost:4000/api/roles", {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`http://localhost:4000/api/auth/users/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          authAxios.get("/roles"),
+          authAxios.get(`/auth/users/${id}`),
         ]);
 
         setRoles(rolesRes.data);
@@ -99,9 +95,7 @@ const EditUser = () => {
             }
 
             try {
-              await axios.put(`http://localhost:4000/api/auth/users/${id}`, payload, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
+              await authAxios.put(`/auth/users/${id}`, payload);
 
               fetchSuccess("User updated successfully");
               navigate("/users");

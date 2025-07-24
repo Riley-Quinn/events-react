@@ -5,7 +5,7 @@ import { format as formatDate } from "date-fns";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import axios from "axios";
+import authAxios from "authAxios";
 import {
   Dialog,
   DialogTitle,
@@ -45,9 +45,7 @@ const SpecialDays = () => {
 
   const fetchSpecialDays = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/specialdays/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.get("/specialdays/all");
 
       const specialDays = res.data.map((b) => {
         const date = new Date(b.importantDay_date);
@@ -72,9 +70,7 @@ const SpecialDays = () => {
 
   const handleAddSpecialDay = async () => {
     try {
-      await axios.post("http://localhost:4000/api/specialdays/create", newSpecialDay, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await authAxios.post("/specialdays/create", newSpecialDay);
       setOpenAdd(false);
       setNewSpecialDay({ name: "", importantDay_date: "" });
       fetchSpecialDays();
@@ -85,14 +81,10 @@ const SpecialDays = () => {
 
   const handleUpdateSpecialDay = async () => {
     try {
-      await axios.put(
-        `http://localhost:4000/api/specialdays/${selectedSpecialDate.id}`,
-        {
-          name: selectedSpecialDate.name,
-          importantDay_date: selectedSpecialDate.importantDay_date,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await authAxios.put(`/specialdays/${selectedSpecialDate.id}`, {
+        name: selectedSpecialDate.name,
+        importantDay_date: selectedSpecialDate.importantDay_date,
+      });
       setEditOpen(false);
       fetchSpecialDays();
     } catch (err) {
@@ -102,9 +94,7 @@ const SpecialDays = () => {
 
   const handleDeleteSpecialDay = async () => {
     try {
-      await axios.delete(`http://localhost:4000/api/specialdays/${selectedSpecialDate.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await authAxios.delete(`/specialdays/${selectedSpecialDate.id}`);
       setEditOpen(false);
       setConfirmDeleteOpen(false);
       fetchSpecialDays();
@@ -125,7 +115,7 @@ const SpecialDays = () => {
           }}
         >
           <Button variant="contained" onClick={() => setOpenAdd(true)} className="add-usr-button">
-            Add Special Day
+            Add Important Day
           </Button>
         </Box>
 
@@ -150,7 +140,7 @@ const SpecialDays = () => {
         />
 
         <Dialog open={openAdd} onClose={() => setOpenAdd(false)}>
-          <DialogTitle>Add Special Day</DialogTitle>
+          <DialogTitle>Add Important Days</DialogTitle>
           <DialogContent>
             <TextField
               placeholder="Name"
@@ -185,7 +175,7 @@ const SpecialDays = () => {
         </Dialog>
 
         <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-          <DialogTitle>Edit Special Day</DialogTitle>
+          <DialogTitle>Edit Important Day</DialogTitle>
           <DialogContent>
             <TextField
               placeholder="Name"
@@ -240,7 +230,7 @@ const SpecialDays = () => {
         <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
           <DialogTitle>Are you sure?</DialogTitle>
           <DialogContent>
-            Do you really want to delete {selectedSpecialDate?.name} specialday?
+            Do you really want to delete {selectedSpecialDate?.name} Important day?
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>

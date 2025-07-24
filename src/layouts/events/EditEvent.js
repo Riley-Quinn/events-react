@@ -7,7 +7,7 @@ import SoftButton from "components/SoftButton";
 import SoftTypography from "components/SoftTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const validationSchema = Yup.object({
@@ -31,11 +31,7 @@ const EditEvent = () => {
 
   const fetchEvent = async () => {
     try {
-      const res = await axios.get(`http://localhost:4000/api/events/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await authAxios.get(`/events/${id}`);
 
       const event = res.data;
 
@@ -69,11 +65,7 @@ const EditEvent = () => {
             setSubmitting(true);
 
             try {
-              await axios.put(`http://localhost:4000/api/events/${id}`, values, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              });
+              await authAxios.put(`/events/${id}`, values);
 
               fetchSuccess("Event updated successfully!");
               navigate("/events");

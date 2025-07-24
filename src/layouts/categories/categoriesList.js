@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { Category } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import authAxios from "authAxios";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -41,7 +42,7 @@ const CategoriesList = () => {
   const [editCategory, setEditCategory] = React.useState(null);
   const fetchData = React.useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/categories");
+      const response = await authAxios.get("/categories");
       setCategoryData(response?.data?.list);
     } catch (error) {
       console.error("Error: ", error);
@@ -54,7 +55,7 @@ const CategoriesList = () => {
 
   const handleStatus = async (data, isActive) => {
     try {
-      await axios.put(`http://localhost:4000/api/categories/${data?.category_id}`, {
+      await authAxios.put(`/categories/${data?.category_id}`, {
         is_active: isActive,
       });
       fetchData();
@@ -66,7 +67,7 @@ const CategoriesList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
-        await axios.delete(`http://localhost:4000/api/categories/${id}`);
+        await authAxios.delete(`/categories/${id}`);
         fetchData();
       } catch (error) {
         console.error("Delete error:", error);

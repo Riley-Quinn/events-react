@@ -6,7 +6,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import SoftButton from "components/SoftButton";
 import SoftTypography from "components/SoftTypography";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const validationSchema = Yup.object({
@@ -25,11 +25,7 @@ const AddSubCategory = ({ onClose }) => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:4000/api/categories", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const res = await authAxios.get("/categories");
         setCategories(res?.data?.list);
       } catch (error) {
         fetchError("Failed to load categories", error);
@@ -48,11 +44,7 @@ const AddSubCategory = ({ onClose }) => {
       onSubmit={async (values, { resetForm }) => {
         setSubmitting(true);
         try {
-          const res = await axios.post("http://localhost:4000/api/sub-category", values, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+          const res = await authAxios.post("/sub-category", values);
           fetchSuccess(res?.data?.message || "Subcategory added");
           resetForm();
           if (onClose) onClose();

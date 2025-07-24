@@ -4,7 +4,7 @@ import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import SoftButton from "components/SoftButton";
 import SoftTypography from "components/SoftTypography";
-import axios from "axios";
+import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const validationSchema = Yup.object({
@@ -24,11 +24,7 @@ const AddRole = ({ onClose }) => {
       onSubmit={async (values) => {
         setSubmitting(true);
         try {
-          const res = await axios.post("http://localhost:4000/api/roles/create", values, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+          const res = await authAxios.post("/roles/create", values);
           if (onClose) onClose();
           fetchSuccess(res?.data?.message);
         } catch (err) {

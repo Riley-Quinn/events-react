@@ -8,7 +8,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import SoftBox from "components/SoftBox";
 import SoftButton from "components/SoftButton";
-import axios from "axios";
+import authAxios from "authAxios";
 import Switch from "@mui/material/Switch";
 import dayjs from "dayjs";
 import AddSubCategory from "./AddSubCategory";
@@ -38,7 +38,7 @@ const SubCategoriesList = () => {
 
   const fetchData = React.useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/categories");
+      const response = await authAxios.get("/categories");
       setCategoryData(response?.data?.list);
     } catch (error) {
       console.error("Error: ", error);
@@ -47,7 +47,7 @@ const SubCategoriesList = () => {
 
   const subcatfetch = React.useCallback(async () => {
     try {
-      const info = await axios.get("http://localhost:4000/api/sub-category");
+      const info = await authAxios.get("/sub-category");
       setSubCategories(info?.data?.list);
     } catch (err) {
       console.error("Errorsub:", err);
@@ -61,7 +61,7 @@ const SubCategoriesList = () => {
 
   const handleStatus = async (data, isActive) => {
     try {
-      await axios.put(`http://localhost:4000/api/sub-category/${data?.sub_category_id}`, {
+      await authAxios.put(`/sub-category/${data?.sub_category_id}`, {
         is_active: isActive,
       });
       subcatfetch();
