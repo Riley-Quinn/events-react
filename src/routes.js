@@ -6,7 +6,7 @@ import SignIn from "layouts/authentication/sign-in";
 // Soft UI Dashboard React icons
 import Shop from "examples/Icons/Shop";
 import Office from "examples/Icons/Office";
-import CreditCard from "examples/Icons/CreditCard";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import UsersList from "layouts/users/UsersList";
 import AddUser from "layouts/users/AddUser";
 import ManageRoles from "layouts/roles/roles";
@@ -30,6 +30,16 @@ import EditPressRelease from "layouts/pressRelease/EditPressRelease";
 import ViewTask from "layouts/tasks/ViewTask";
 import EditTask from "layouts/tasks/EditTask";
 import ViewPressRelease from "layouts/pressRelease/ViewPressRelease";
+import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import HubIcon from "@mui/icons-material/Hub";
+import CategoryIcon from "@mui/icons-material/Category";
+import BubbleChartIcon from "@mui/icons-material/BubbleChart";
+import SyncLockIcon from "@mui/icons-material/SyncLock";
+import FormatListNumberedRtlIcon from "@mui/icons-material/FormatListNumberedRtl";
+import NewspaperIcon from "@mui/icons-material/Newspaper";
+import CakeIcon from "@mui/icons-material/Cake";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 const routes = [
   {
@@ -84,6 +94,11 @@ const routes = [
     component: <EditEvent />,
   },
   {
+    key: "pressReleaseList",
+    route: "/press-release/view-press/:press_id",
+    component: <ViewPressRelease />,
+  },
+  {
     key: "addCategories",
     route: "/Category/add-subcategory",
     component: <AddSubCategory />,
@@ -95,7 +110,7 @@ const routes = [
   },
   {
     key: "editPressRelease",
-    route: "/press-release/edit-press/:id",
+    route: "/edit-press/:id",
     component: <EditPressRelease />,
   },
   {
@@ -108,7 +123,7 @@ const routes = [
     name: "Dashboard",
     key: "dashboard",
     route: "/dashboard",
-    icon: <Shop size="12px" />,
+    icon: <SpaceDashboardIcon size="12px" />,
     component: <Dashboard />,
     noCollapse: true,
   },
@@ -117,7 +132,7 @@ const routes = [
     name: "Users",
     key: "users",
     route: "/users",
-    icon: <Office size="12px" />,
+    icon: <RecentActorsIcon size="12px" />,
     component: <UsersList />,
     noCollapse: true,
   },
@@ -126,7 +141,7 @@ const routes = [
     name: "Manage Roles",
     key: "manage-roles",
     route: "/manage-roles",
-    icon: <CreditCard size="12px" />,
+    icon: <HubIcon size="12px" />,
     component: <ManageRoles />,
     noCollapse: true,
   },
@@ -135,7 +150,7 @@ const routes = [
     name: "Manage Permissions",
     key: "manage-permissions",
     route: "/manage-permissions",
-    icon: <CreditCard size="12px" />,
+    icon: <SyncLockIcon size="12px" />,
     component: <ManagePermissions />,
     noCollapse: true,
   },
@@ -144,7 +159,7 @@ const routes = [
     name: "Categories",
     key: "categories",
     route: "/categories",
-    icon: <CreditCard size="12px" />,
+    icon: <CategoryIcon size="12px" />,
     component: <CategoriesList />,
     noCollapse: true,
   },
@@ -153,7 +168,7 @@ const routes = [
     name: "SubCategories",
     key: "sub-categories",
     route: "/sub-categories",
-    icon: <CreditCard size="12px" />,
+    icon: <BubbleChartIcon size="12px" />,
     component: <SubCategoriesList />,
     noCollapse: true,
   },
@@ -162,7 +177,7 @@ const routes = [
     name: "Tasks",
     key: "tasks",
     route: "/tasks",
-    icon: <CreditCard size="12px" />,
+    icon: <FormatListNumberedRtlIcon size="12px" />,
     component: <TasksList />,
     noCollapse: true,
   },
@@ -171,7 +186,7 @@ const routes = [
     name: "Press Release",
     key: "press-release",
     route: "/press-release",
-    icon: <CreditCard size="12px" />,
+    icon: <NewspaperIcon size="12px" />,
     component: <PressReleaseList />,
     noCollapse: true,
   },
@@ -180,7 +195,7 @@ const routes = [
     name: "Birthdays",
     key: "birthdays",
     route: "/birthdays",
-    icon: <CreditCard size="12px" />,
+    icon: <CakeIcon size="12px" />,
     component: <Birthdays />,
     noCollapse: true,
   },
@@ -189,7 +204,7 @@ const routes = [
     name: "Important Days",
     key: "special-days",
     route: "/special-days",
-    icon: <CreditCard size="12px" />,
+    icon: <EventAvailableIcon size="12px" />,
     component: <SpecialDays />,
     noCollapse: true,
   },
@@ -198,7 +213,7 @@ const routes = [
     name: "Events",
     key: "events",
     route: "/events",
-    icon: <CreditCard size="12px" />,
+    icon: <CalendarMonthIcon size="12px" />,
     component: <EventsCalendar />,
     noCollapse: true,
   },

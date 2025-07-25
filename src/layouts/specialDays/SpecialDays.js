@@ -165,7 +165,11 @@ const SpecialDays = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenAdd(false)} className="cancel-button">
+            <Button
+              onClick={() => setOpenAdd(false)}
+              className="cancel-button"
+              sx={{ padding: 1.5 }}
+            >
               Cancel
             </Button>
             <Button variant="contained" onClick={handleAddSpecialDay} className="add-usr-button">

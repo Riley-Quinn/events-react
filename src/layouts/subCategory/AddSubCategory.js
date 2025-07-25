@@ -26,7 +26,8 @@ const AddSubCategory = ({ onClose }) => {
       setLoading(true);
       try {
         const res = await authAxios.get("/categories");
-        setCategories(res?.data?.list);
+        const activeCategories = res?.data?.list?.filter((cat) => cat.is_active);
+        setCategories(activeCategories);
       } catch (error) {
         fetchError("Failed to load categories", error);
       } finally {

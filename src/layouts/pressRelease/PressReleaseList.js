@@ -146,21 +146,16 @@ const PressReleaseList = () => {
           const press = rows[dataIndex];
           return (
             <>
+              <IconButton color="primary" onClick={() => navigate(`/edit-press/${press.press_id}`)}>
+                <EditIcon />
+              </IconButton>
+
               <IconButton
                 color="primary"
                 onClick={() => navigate(`/press-release/view-press/${press.press_id}`)}
               >
                 <Visibility />
               </IconButton>
-              <IconButton
-                color="primary"
-                onClick={() => navigate(`/press-release/edit-press/${press.press_id}`)}
-              >
-                <EditIcon />
-              </IconButton>
-              {/* <IconButton color="primary" onClick={() => handleEditClick(press)}>
-                <EditIcon />
-              </IconButton> */}
               <IconButton color="error" onClick={() => handleDeleteClick(press.press_id)}>
                 <DeleteIcon />
               </IconButton>
