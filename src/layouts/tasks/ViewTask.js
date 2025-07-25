@@ -88,7 +88,17 @@ const ViewTask = () => {
                         </Typography>
                       </Grid>
                       <Grid item xs={8}>
-                        <Typography variant="body1">{item.value}</Typography>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            whiteSpace: "pre-wrap", // keeps line breaks and wraps long text
+                            wordBreak: "break-word", // ensures long words break properly
+                            maxHeight: item.label === "Description" ? "200px" : "auto", // limit height for description
+                            overflowY: item.label === "Description" ? "auto" : "unset", // scroll if content overflows
+                          }}
+                        >
+                          {item.value}
+                        </Typography>{" "}
                       </Grid>
                     </React.Fragment>
                   ))}
