@@ -113,7 +113,7 @@ const AddPressRelease = () => {
                       Assigne
                     </SoftTypography>
                     <Autocomplete
-                      options={usersList}
+                      options={usersList.filter((user) => user.is_active)}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) => option.id === value.id}
                       onChange={(e, value) => {

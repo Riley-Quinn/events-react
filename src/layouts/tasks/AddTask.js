@@ -194,7 +194,7 @@ const AddTask = () => {
                       Category
                     </SoftTypography>
                     <Autocomplete
-                      options={category}
+                      options={category.filter((cat) => cat.is_active)}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) =>
                         Number(option.category_id) === Number(value.category_id)
@@ -229,7 +229,7 @@ const AddTask = () => {
                         Subcategories
                       </SoftTypography>
                       <Autocomplete
-                        options={subcategories}
+                        options={subcategories.filter((sub) => sub.is_active)}
                         getOptionLabel={(option) => option?.name || ""}
                         isOptionEqualToValue={(option, value) =>
                           Number(option?.sub_category_id) === Number(value?.sub_category_id)
@@ -264,7 +264,7 @@ const AddTask = () => {
                       Assigne
                     </SoftTypography>
                     <Autocomplete
-                      options={usersList}
+                      options={usersList.filter((user) => user.is_active)}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) => option.id === value.id}
                       onChange={(e, value) => {

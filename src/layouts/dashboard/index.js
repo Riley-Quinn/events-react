@@ -69,17 +69,6 @@ function Dashboard() {
       }
     };
 
-    // Fetch roles count (filter out Super Admin with id=1)
-    const fetchRoles = async () => {
-      try {
-        const res = await authAxios.get("/roles");
-        const allRoles = Array.isArray(res.data) ? res.data : [];
-        const filtered = allRoles.filter((r) => r.id !== 1);
-        setRolesCount(filtered.length);
-      } catch (err) {
-        console.error("Failed to fetch roles count", err);
-      }
-    };
     // Fetch tasks count by status
     const fetchTasks = async () => {
       try {
@@ -140,7 +129,7 @@ function Dashboard() {
     };
 
     fetchUsers();
-    fetchRoles();
+    // fetchRoles();
     fetchTasks();
     fetchPressReleases();
   }, []);
@@ -180,7 +169,7 @@ function Dashboard() {
               </Grid>
             )}
 
-            {canManageRoles && (
+            {/* {canManageRoles && (
               <Grid
                 item
                 xs={12}
@@ -203,7 +192,7 @@ function Dashboard() {
                   icon={{ color: "info", component: "emoji_events" }}
                 />
               </Grid>
-            )}
+            )} */}
           </Grid>
           <Typography variant="h6" gutterBottom mt={8}>
             <strong>Task Status</strong>

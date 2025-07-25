@@ -113,7 +113,7 @@ const EditPressRelease = () => {
                       Assignee
                     </SoftTypography>
                     <Autocomplete
-                      options={usersList}
+                      options={usersList.filter((user) => user.is_active)}
                       getOptionLabel={(option) => option.name}
                       value={usersList.find((a) => a.id == values.assignee_id) || null}
                       onChange={(e, value) => setFieldValue("assignee_id", value ? value.id : "")}

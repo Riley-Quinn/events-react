@@ -181,7 +181,7 @@ const EditUser = () => {
                       Role
                     </SoftTypography>
                     <Autocomplete
-                      options={roles}
+                      options={roles.filter((role) => role.is_active)}
                       getOptionLabel={(option) => option.name}
                       value={roles.find((r) => r.id === values.role_id) || null}
                       onChange={(e, value) => setFieldValue("role_id", value ? value.id : "")}

@@ -40,6 +40,8 @@ const CategoriesList = () => {
   const [categoryData, setCategoryData] = React.useState([]);
   const [isAddOpen, setIsAddOpen] = React.useState(false);
   const [editCategory, setEditCategory] = React.useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = React.useState(null);
   const fetchData = React.useCallback(async () => {
     try {
       const response = await authAxios.get("/categories");
@@ -119,7 +121,13 @@ const CategoriesList = () => {
               <IconButton color="primary" onClick={() => setEditCategory(row)}>
                 <EditIcon />
               </IconButton>
-              <IconButton color="error" onClick={() => handleDelete(row.category_id)}>
+              <IconButton
+                color="error"
+                onClick={() => {
+                  setSelectedCategoryId(row.category_id);
+                  setDeleteDialogOpen(true);
+                }}
+              >
                 <DeleteIcon />
               </IconButton>
             </>
@@ -184,6 +192,37 @@ const CategoriesList = () => {
               fetchData(); // Refresh list after save/update
             }}
           />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <p>Are you sure you want to delete this category?</p>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
+            <SoftButton
+              variant="outlined"
+              color="secondary"
+              onClick={() => setDeleteDialogOpen(false)}
+              style={{ marginRight: "8px" }}
+            >
+              Cancel
+            </SoftButton>
+            <SoftButton
+              variant="gradient"
+              color="error"
+              onClick={async () => {
+                try {
+                  await authAxios.delete(`/categories/${selectedCategoryId}`);
+                  setDeleteDialogOpen(false);
+                  fetchData();
+                } catch (error) {
+                  console.error("Delete error:", error);
+                }
+              }}
+            >
+              Delete
+            </SoftButton>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -146,7 +146,7 @@ const CommentBox = ({ module, moduleId }) => {
           <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
             <InsertEmoticonIcon />
           </IconButton>
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button variant="gradient" className="add-usr-button" onClick={handleSubmit}>
             Post
           </Button>
         </Box>
