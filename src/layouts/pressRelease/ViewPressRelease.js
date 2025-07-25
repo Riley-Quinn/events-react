@@ -6,26 +6,26 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import CommentBox from "layouts/Comments";
 
-const ViewTask = () => {
-  const { task_id } = useParams();
+const ViewPressRelease = () => {
+  const { pressId } = useParams();
   const navigate = useNavigate();
-  const [task, setTask] = useState(null);
+  const [pressRelease, setPressRelease] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTask = async () => {
+    const fetchPressRelease = async () => {
       try {
-        const res = await authAxios.get(`/tasks/${task_id}`);
-        setTask(res.data);
+        const res = await authAxios.get(`/press-release/${pressId}`);
+        setPressRelease(res.data);
       } catch (error) {
-        console.error("Failed to fetch task", error);
+        console.error("Failed to fetch pressRelease", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTask();
-  }, [task_id]);
+    fetchPressRelease();
+  }, [pressId]);
 
   if (loading) {
     return (
@@ -38,12 +38,12 @@ const ViewTask = () => {
     );
   }
 
-  if (!task) {
+  if (!pressRelease) {
     return (
       <DashboardLayout>
         <DashboardNavbar />
         <Box sx={{ p: 3 }}>
-          <Typography variant="h6">No Task Found</Typography>
+          <Typography variant="h6">No Press Release Found</Typography>
         </Box>
       </DashboardLayout>
     );
@@ -63,23 +63,28 @@ const ViewTask = () => {
       <DashboardNavbar />
       <Box sx={{ padding: 3 }}>
         <Typography variant="h4" gutterBottom mb={2}>
-          Task Details
+          Press Release Details
         </Typography>
 
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Box
-              sx={{ ...sectionStyle, height: "600px", display: "flex", flexDirection: "column" }}
+              sx={{
+                ...sectionStyle,
+                height: "600px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
             >
-              <Box sx={{ flex: 1 }}>
+              <Box>
                 <Grid container spacing={2}>
                   {[
-                    { label: "Title", value: task.title },
-                    { label: "Category", value: task.category_name },
-                    { label: "Location", value: task.location },
-                    { label: "Assignee", value: task.assignee_name },
-                    { label: "Status", value: task.status_name },
-                    { label: "Description", value: task.description },
+                    { label: "Title", value: pressRelease.title },
+                    { label: "Created By", value: pressRelease.createdby_name },
+                    { label: "Assignee", value: pressRelease.assignee_name },
+                    { label: "Notes", value: pressRelease.notes },
+                    { label: "Status", value: pressRelease.status_name },
                   ].map((item, index) => (
                     <React.Fragment key={index}>
                       <Grid item xs={4}>
@@ -88,23 +93,27 @@ const ViewTask = () => {
                         </Typography>
                       </Grid>
                       <Grid item xs={8}>
-                        <Typography variant="body1">{item.value}</Typography>
+                        <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                          {item.value}
+                        </Typography>
                       </Grid>
                     </React.Fragment>
                   ))}
                 </Grid>
               </Box>
 
-              <Box mt={2} display="flex" justifyContent="flex-end">
+              {/* Back button at bottom */}
+              <Box display="flex" justifyContent="flex-end" mt={2}>
                 <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
                   Back
                 </Button>
               </Box>
             </Box>
           </Grid>
+
           <Grid item xs={12} md={6}>
             <Box sx={{ height: "600px" }}>
-              <CommentBox module={"task"} moduleId={task_id} />
+              <CommentBox module={"press_release"} moduleId={pressId} />
             </Box>
           </Grid>
         </Grid>
@@ -113,4 +122,4 @@ const ViewTask = () => {
   );
 };
 
-export default ViewTask;
+export default ViewPressRelease;

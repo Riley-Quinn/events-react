@@ -29,6 +29,7 @@ import ViewEvent from "layouts/events/ViewEvent";
 import EditPressRelease from "layouts/pressRelease/EditPressRelease";
 import ViewTask from "layouts/tasks/ViewTask";
 import EditTask from "layouts/tasks/EditTask";
+import ViewPressRelease from "layouts/pressRelease/ViewPressRelease";
 
 const routes = [
   {
@@ -68,6 +69,11 @@ const routes = [
     component: <AddPressRelease />,
   },
   {
+    key: "addPress",
+    route: "/press-release/view-press/:pressId",
+    component: <ViewPressRelease />,
+  },
+  {
     key: "addEvents",
     route: "/events/add-event",
     component: <AddEvent />,
@@ -89,7 +95,7 @@ const routes = [
   },
   {
     key: "editPressRelease",
-    route: "/edit-press/:id",
+    route: "/press-release/edit-press/:id",
     component: <EditPressRelease />,
   },
   {

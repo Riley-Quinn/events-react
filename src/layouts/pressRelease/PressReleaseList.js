@@ -23,6 +23,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import { Visibility } from "@mui/icons-material";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -145,7 +146,16 @@ const PressReleaseList = () => {
           const press = rows[dataIndex];
           return (
             <>
-              <IconButton color="primary" onClick={() => navigate(`/edit-press/${press.press_id}`)}>
+              <IconButton
+                color="primary"
+                onClick={() => navigate(`/press-release/view-press/${press.press_id}`)}
+              >
+                <Visibility />
+              </IconButton>
+              <IconButton
+                color="primary"
+                onClick={() => navigate(`/press-release/edit-press/${press.press_id}`)}
+              >
                 <EditIcon />
               </IconButton>
               {/* <IconButton color="primary" onClick={() => handleEditClick(press)}>

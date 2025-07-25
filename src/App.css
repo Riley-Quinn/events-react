@@ -69,3 +69,12 @@ table {
   padding: 8px;
   border-radius: 8px;
 }
+.emoji-mart-preview-emoji {
+  display: none;
+}
+.emoji-mart-title-label {
+  display: none;
+}
+.emoji-mart-bar {
+  display: none;
+}
