@@ -20,6 +20,7 @@ import authAxios from "authAxios";
 import { useFetchUsers } from "contexts/fetchUsersContext";
 import { useAuthUser } from "contexts/userContext";
 import { useNavigate } from "react-router-dom";
+import Switch from "@mui/material/Switch";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
@@ -30,6 +31,7 @@ const validationSchema = Yup.object({
   sub_category_id: Yup.number().nullable(),
   status_id: Yup.number().typeError("Status is required").required("Status is required"),
   estimated_date: Yup.date().nullable(),
+  is_important: Yup.boolean(),
 });
 
 const AddTask = () => {
@@ -105,6 +107,7 @@ const AddTask = () => {
             sub_category_id: null,
             status_id: 1,
             estimated_date: "",
+            is_important: false,
           }}
           validationSchema={validationSchema}
           onSubmit={async (values, { setFieldError }) => {
@@ -119,6 +122,7 @@ const AddTask = () => {
               sub_category_id: values.sub_category_id,
               status_id: values.status_id,
               estimated_date: values.estimated_date || null,
+              is_important: values.is_important || false,
             };
 
             try {
@@ -339,6 +343,31 @@ const AddTask = () => {
                       InputLabelProps={{
                         shrink: true,
                       }}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Important
+                    </SoftTypography>
+                    <Switch
+                      name="is_important"
+                      checked={values.is_important}
+                      onChange={handleChange}
+                      color="primary"
+                      inputProps={{ "aria-label": "secondary checkbox" }}
+                    />
+                    <FormControl
+                      control={
+                        <Switch
+                          name="is_important"
+                          checked={values.is_important}
+                          onChange={handleChange}
+                          color="primary"
+                        />
+                      }
+                      label="Mark as Important"
                     />
                   </FormControl>
                 </Grid>
