@@ -32,8 +32,8 @@ import CoverLayout from "layouts/authentication/components/CoverLayout";
 
 // Images
 import bgggbggggg1 from "../../../assets/images/bgmain.jpg";
-import { ability } from "../../../contexts/AbilityContext";
-import { defineAbilityFor } from "../../../casl/defineAbility";
+// import { ability } from "../../../contexts/AbilityContext";
+// import { defineAbilityFor } from "../../../casl/defineAbility";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 function SignIn() {
   const { fetchError, fetchSuccess } = useSnackbar();
@@ -50,7 +50,7 @@ function SignIn() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("permissions", JSON.stringify(permissions));
-      ability.update(defineAbilityFor(permissions));
+      // ability.update(defineAbilityFor(permissions));
       window.location.reload();
       navigate("/dashboard", { replace: true });
       fetchSuccess(res?.data?.message);

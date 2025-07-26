@@ -22,21 +22,20 @@ import PropTypes from "prop-types";
 import { useAbility } from "../contexts/AbilityContext";
 import NoWebAccess from "../NoWebAccessPage";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ route }) => {
   const token = localStorage.getItem("token");
   const ability = useAbility();
-
   if (!token) {
     return <Navigate to="/authentication/sign-in" replace />;
   }
-  if (ability.can("modify", "Permission") || ability.can("manage", "User")) {
-    return children; // Allow web access
+  if (ability.can("read", route?.name)) {
+    return route?.component; // Allow web access
   }
   return <NoWebAccess />;
 };
 
 ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
+  route: PropTypes.node.isRequired,
 };
 
 export default ProtectedRoute;

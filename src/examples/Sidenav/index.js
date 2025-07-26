@@ -45,17 +45,19 @@ import { useSoftUIController, setMiniSidenav } from "context";
 import Profile from "../../assets/images/Profile.png";
 import { useAbility } from "contexts/AbilityContext";
 import { filterRoutesByPermission } from "permissionRoutes";
+import { useAuthUser } from "contexts/userContext";
 function Sidenav({ color, brandName, routes, bgColor = "#1E1E2F", ...rest }) {
   const [controller, dispatch] = useSoftUIController();
   const { miniSidenav, transparentSidenav } = controller;
+  const { user } = useAuthUser();
   const location = useLocation();
   const { pathname } = location;
   const collapseName = pathname.split("/").slice(1)[0];
 
   const ability = useAbility();
-
+  console.log("user", user);
   // 🟢 Filter routes based on CASL permissions
-  const allowedRoutes = filterRoutesByPermission(routes, ability);
+  const allowedRoutes = filterRoutesByPermission(routes, ability, user?.permissions);
 
   const closeSidenav = () => setMiniSidenav(dispatch, true);
 

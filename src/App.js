@@ -105,15 +105,12 @@ export default function App() {
 
       if (route.route) {
         const isPublicRoute = route.route === "/authentication/sign-in";
-
         return (
           <Route
             exact
-            path={route.route}
-            key={route.key}
-            element={
-              isPublicRoute ? route.component : <ProtectedRoute>{route.component}</ProtectedRoute>
-            }
+            path={route?.route}
+            key={route?.key}
+            element={isPublicRoute ? route?.component : <ProtectedRoute route={route} />}
           />
         );
       }
