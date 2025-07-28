@@ -29,7 +29,7 @@ const ProtectedRoute = ({ children }) => {
   if (!token) {
     return <Navigate to="/authentication/sign-in" replace />;
   }
-  if (ability.can("modify", "Permission") || ability.can("manage", "User")) {
+  if (ability.can("view", "Media") || ability.can("view", "Media")) {
     return children; // Allow web access
   }
   return <NoWebAccess />;

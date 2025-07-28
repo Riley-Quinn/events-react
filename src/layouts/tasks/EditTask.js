@@ -130,12 +130,22 @@ const EditTask = () => {
                 assignee_id: values.assignee_id,
                 category_id: values.category_id,
                 sub_category_id: values.sub_category_id,
-                status_id: values.status_id,
                 estimated_date: values.estimated_date || null,
               };
 
-              const res = await authAxios.put(`/tasks/${task_id}`, updatedData);
-              fetchSuccess(res?.data?.message || "Task updated");
+              const taskStatus = values.status_id;
+
+              // Call main update
+              await authAxios.put(`/tasks/${task_id}`, updatedData);
+
+              // Call status update if status changed
+              if (taskStatus !== initialValues.status_id) {
+                await authAxios.put(`/tasks/${task_id}/status`, {
+                  status_id: taskStatus,
+                });
+              }
+
+              fetchSuccess("Task updated successfully");
               navigate("/tasks");
             } catch (err) {
               fetchError("Failed to update task");
