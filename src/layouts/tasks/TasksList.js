@@ -1,3 +1,4 @@
+//TaskList
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MUIDataTable from "mui-datatables";
@@ -14,7 +15,9 @@ import {
   RadioGroup,
   FormControlLabel,
   FormLabel,
-  Button,
+  Switch,
+  FormControl,
+  FormGroup,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import SoftBox from "components/SoftBox";
@@ -54,18 +57,19 @@ const TasksList = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [newStatus, setNewStatus] = useState("");
+  const [showAll, setShowAll] = useState(false);
 
   const token = localStorage.getItem("token");
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await authAxios.get("/tasks/");
+      const response = await authAxios.get(`/tasks?all=${showAll}`);
       console.log("Full response from /tasks:", response);
       setRows(response.data.list);
     } catch (error) {
       console.error("Unable to fetch tasks", error);
     }
-  }, [token]);
+  }, [showAll]);
 
   useEffect(() => {
     fetchData();
@@ -134,6 +138,13 @@ const TasksList = () => {
   };
 
   const columns = [
+    {
+      name: "start_date",
+      label: "Start Date",
+      options: {
+        customBodyRender: (value) => (value ? new Date(value).toLocaleDateString() : "-"),
+      },
+    },
     { name: "category_name", label: "Category" },
     { name: "title", label: "Title" },
     { name: "description", label: "Description" },
@@ -180,6 +191,20 @@ const TasksList = () => {
       <DashboardNavbar />
       <Card style={{ padding: "24px", margin: "16px auto", maxWidth: "2000px" }}>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "16px" }}>
+          <FormControl component="fieldset">
+            <FormGroup row>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={showAll}
+                    onChange={(e) => setShowAll(e.target.checked)} // 🔹 toggle ON/OFF
+                    color="primary"
+                  />
+                }
+                label="Show All Tasks"
+              />
+            </FormGroup>
+          </FormControl>
           <SoftButton
             variant="gradient"
             className="add-usr-button"
