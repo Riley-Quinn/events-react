@@ -169,7 +169,7 @@ export default function App() {
       ) : (
         <Routes>
           {getRoutes(routes.filter((route) => route?.access !== "public"))}
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to="/about" />} />
         </Routes>
       )}
     </ThemeProvider>

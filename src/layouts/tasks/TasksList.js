@@ -28,6 +28,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import authAxios from "authAxios";
 import { Visibility } from "@mui/icons-material";
+import { Tooltip, Typography } from "@mui/material";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -146,9 +147,66 @@ const TasksList = () => {
       },
     },
     { name: "category_name", label: "Category" },
-    { name: "title", label: "Title" },
-    { name: "description", label: "Description" },
-    { name: "location", label: "Location" },
+    {
+      name: "title",
+      label: "Title",
+      options: {
+        customBodyRender: (value) => (
+          <Tooltip title={value} arrow>
+            <Typography
+              noWrap
+              sx={{
+                maxWidth: 100,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {value}
+            </Typography>
+          </Tooltip>
+        ),
+      },
+    },
+    {
+      name: "description",
+      label: "Description",
+      options: {
+        customBodyRender: (value) => (
+          <Tooltip title={value} arrow>
+            <Typography
+              noWrap
+              sx={{
+                maxWidth: 100,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {value}
+            </Typography>
+          </Tooltip>
+        ),
+      },
+    },
+    {
+      name: "location",
+      label: "Location",
+      options: {
+        customBodyRender: (value) => (
+          <Tooltip title={value} arrow>
+            <Typography
+              noWrap
+              sx={{
+                maxWidth: 100,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {value}
+            </Typography>
+          </Tooltip>
+        ),
+      },
+    },
     { name: "assignee_name", label: "Assignee" },
     { name: "status_name", label: "Status" },
     {

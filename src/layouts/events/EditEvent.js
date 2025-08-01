@@ -32,15 +32,25 @@ const EditEvent = () => {
   const fetchEvent = async () => {
     try {
       const res = await authAxios.get(`/events/${id}`);
-
       const event = res.data;
+
+      const normalizeDate = (d) => {
+        if (!d) return "";
+        // Convert ISO string to Date
+        const date = new Date(d);
+        // Get local year-month-day (no UTC shift)
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`; // YYYY-MM-DD
+      };
 
       setInitialValues({
         title: event.title,
         description: event.description,
         location: event.location,
-        date: event.date.slice(0, 10), // ✅ Ensure YYYY-MM-DD format
-        time: event.time,
+        date: normalizeDate(event.date), // 👈 FIXED for ISO
+        time: event.time ? event.time.slice(0, 5) : "", // HH:mm
       });
     } catch (err) {
       fetchError("Failed to fetch event details", err);

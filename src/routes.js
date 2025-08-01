@@ -40,6 +40,7 @@ import FormatListNumberedRtlIcon from "@mui/icons-material/FormatListNumberedRtl
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import CakeIcon from "@mui/icons-material/Cake";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ProfilePage from "layouts/AboutPage/ProfilePage";
 
 const routes = [
   {
@@ -118,6 +119,16 @@ const routes = [
     route: "/no-web-access",
     component: <NoWebAccess />,
   },
+  {
+    type: "collapse",
+    name: "About",
+    key: "about",
+    icon: <Office size="12px" />,
+    route: "/about",
+    component: <ProfilePage />,
+    noCollapse: true,
+  },
+
   {
     type: "collapse",
     name: "Dashboard",
