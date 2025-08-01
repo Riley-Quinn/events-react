@@ -66,7 +66,7 @@ const ViewPressRelease = () => {
           : `https://web.whatsapp.com/send?text=${encodedMessage}`;
 
       case "twitter":
-        return `https://twitter.com/intent/tweet?text=${encodedMessage}`;
+        return `https://x.com/intent/tweet?text=${encodedMessage}`;
 
       case "linkedin":
         return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedMessage}`;

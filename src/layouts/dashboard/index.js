@@ -591,8 +591,8 @@ function Dashboard() {
 
                             {events
                               .filter((event) => {
-                                const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-                                const eventDay = new Date(event.date).toISOString().split("T")[0];
+                                const today = new Date().toLocaleDateString("en-CA");
+                                const eventDay = new Date(event.date).toLocaleDateString("en-CA");
                                 return eventDay === today;
                               })
                               .map((event) => {
