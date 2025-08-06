@@ -498,7 +498,6 @@ const ViewPressRelease = () => {
               <Button onClick={() => setShareDialogOpen(false)}>Close</Button>
             </DialogActions>
           </Dialog>
-          ;
         </Grid>
       </Box>
     </DashboardLayout>

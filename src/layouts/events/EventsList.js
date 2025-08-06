@@ -106,7 +106,20 @@ const EventsCalendar = () => {
   };
 
   const CustomEvent = ({ event }) => {
-    return <span>{event.title}</span>;
+    return (
+      <span
+        title={event.title}
+        style={{
+          display: "block",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: "100%",
+        }}
+      >
+        {event.title}
+      </span>
+    );
   };
 
   return (

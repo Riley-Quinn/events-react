@@ -230,9 +230,11 @@ const ViewTask = () => {
               </Box>
             </Grid>
             {/* Comment Section */}
-            <Box sx={{ flex: 1 }}>
-              <CommentBox module="task" moduleId={task_id} />
-            </Box>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ flex: 1, height: "600px" }}>
+                <CommentBox module="task" moduleId={task_id} />
+              </Box>
+            </Grid>
           </Grid>
         </Grid>
       </Box>

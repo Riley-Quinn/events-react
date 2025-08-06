@@ -483,9 +483,10 @@ function Dashboard() {
                           p: 3,
                           boxShadow: 2,
                           background: "linear-gradient(135deg, #fff6f0, #fde2cf)", // light peach-pink
+                          height: "50vh",
                         }}
                       >
-                        <Card sx={{ p: 2 }}>
+                        <Card sx={{ p: 2, height: "43vh" }}>
                           <Box
                             sx={{
                               display: "flex",
@@ -507,7 +508,7 @@ function Dashboard() {
                             </Typography>
                           </Box>
 
-                          <Box sx={{ mt: 2 }}>
+                          <Box sx={{ mt: 2, height: "30vh", overflowY: "auto" }}>
                             <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                               Today
                             </Typography>
@@ -530,10 +531,10 @@ function Dashboard() {
                                   }}
                                   onClick={() => navigate(`/tasks/${task.id}`)}
                                 >
-                                  <Typography variant="body2" fontWeight="bold">
+                                  <Typography variant="body2" fontWeight="bold" noWrap>
                                     {task.title}
                                   </Typography>
-                                  <Typography variant="body2" color="text.secondary">
+                                  <Typography variant="body2" color="text.secondary" noWrap>
                                     Location: {task.location}
                                   </Typography>
                                 </Box>
@@ -560,9 +561,10 @@ function Dashboard() {
                           p: 3,
                           boxShadow: 2,
                           background: "linear-gradient(135deg, #fff6f0, #fde2cf)", // light peach-pink
+                          height: "50vh",
                         }}
                       >
-                        <Card sx={{ p: 2 }}>
+                        <Card sx={{ p: 2, height: "43vh" }}>
                           <Box
                             sx={{
                               display: "flex",
@@ -571,7 +573,6 @@ function Dashboard() {
                             }}
                           >
                             <Typography variant="h6">
-                              {" "}
                               <strong>Events List</strong>
                             </Typography>
                             <Typography
@@ -584,7 +585,7 @@ function Dashboard() {
                             </Typography>
                           </Box>
 
-                          <Box sx={{ mt: 2 }}>
+                          <Box sx={{ mt: 2, height: "30vh", overflowY: "auto" }}>
                             <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                               Today
                             </Typography>
@@ -621,10 +622,10 @@ function Dashboard() {
                                     }}
                                     onClick={() => navigate(`/events/view/${event.id}`)}
                                   >
-                                    <Typography variant="body2" fontWeight="bold">
+                                    <Typography variant="body2" fontWeight="bold" noWrap>
                                       {time} – {event.title}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2" color="text.secondary" noWrap>
                                       Location: {event.location || "Not specified"}
                                     </Typography>
                                   </Box>
@@ -633,8 +634,8 @@ function Dashboard() {
 
                             {/* If no events for today */}
                             {events.filter((event) => {
-                              const today = new Date().toISOString().split("T")[0];
-                              const eventDay = new Date(event.date).toISOString().split("T")[0];
+                              const today = new Date().toLocaleDateString("en-CA");
+                              const eventDay = new Date(event.date).toLocaleDateString("en-CA");
                               return eventDay === today;
                             }).length === 0 && (
                               <Typography variant="body2" color="text.secondary">
@@ -655,7 +656,17 @@ function Dashboard() {
                   {/* Quote Card */}
                   <Grid item xs={12} sx={{ mt: -3 }}>
                     <Card sx={{ p: 3, textAlign: "center" }}>
-                      <SoftBox component="img" src={logo} alt="Logo" width="300px" height="125px" />
+                      <SoftBox
+                        component="img"
+                        src={logo}
+                        alt="Logo"
+                        sx={{
+                          width: "300px",
+                          height: "125px",
+                          display: "block",
+                          margin: "0 auto", // centers horizontally
+                        }}
+                      />
                       <Typography variant="body1" sx={{ fontStyle: "italic", mb: 1 }}>
                         “The Man who works for others, without any selfish motive, really does good
                         to himself.”
