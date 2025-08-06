@@ -210,10 +210,10 @@ const PressReleaseList = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <SoftButton onClick={handleCancelDelete} color="secondary">
+          <SoftButton onClick={handleCancelDelete} variant="gradient" className="cancel-button">
             Cancel
           </SoftButton>
-          <SoftButton onClick={handleConfirmDelete} color="error">
+          <SoftButton onClick={handleConfirmDelete} variant="gradient" className="add-usr-button">
             Delete
           </SoftButton>
         </DialogActions>
@@ -246,7 +246,7 @@ const PressReleaseList = () => {
           </RadioGroup>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
-          <SoftButton onClick={handleCancelEdit} className="cancel-button">
+          <SoftButton onClick={handleCancelEdit} variant="gradient" className="cancel-button">
             Cancel
           </SoftButton>
           <SoftButton variant="gradient" className="add-usr-button" onClick={handleSaveStatus}>

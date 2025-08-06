@@ -200,8 +200,8 @@ const CategoriesList = () => {
           <p>Are you sure you want to delete this category?</p>
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
             <SoftButton
-              variant="outlined"
-              color="secondary"
+              variant="gradient"
+              className="add-usr-button"
               onClick={() => setDeleteDialogOpen(false)}
               style={{ marginRight: "8px" }}
             >
@@ -209,7 +209,7 @@ const CategoriesList = () => {
             </SoftButton>
             <SoftButton
               variant="gradient"
-              color="error"
+              className="cancel-button"
               onClick={async () => {
                 try {
                   await authAxios.delete(`/categories/${selectedCategoryId}`);

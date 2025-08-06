@@ -297,10 +297,10 @@ const TasksList = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <SoftButton onClick={handleCancelDelete} color="secondary">
+          <SoftButton onClick={handleCancelDelete} variant="gradient" className="cancel-button">
             Cancel
           </SoftButton>
-          <SoftButton onClick={handleConfirmDelete} color="error">
+          <SoftButton onClick={handleConfirmDelete} variant="gradient" className="add-usr-button">
             Delete
           </SoftButton>
         </DialogActions>

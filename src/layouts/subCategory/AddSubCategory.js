@@ -8,6 +8,7 @@ import SoftButton from "components/SoftButton";
 import SoftTypography from "components/SoftTypography";
 import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import PropTypes from "prop-types";
 
 const validationSchema = Yup.object({
   name: Yup.string().required("Subcategory name is required"),
@@ -15,7 +16,7 @@ const validationSchema = Yup.object({
 });
 
 // eslint-disable-next-line react/prop-types
-const AddSubCategory = ({ onClose }) => {
+const AddSubCategory = ({ onClose, editSubCategory, setEditSubCategory }) => {
   const [categories, setCategories] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,14 +41,28 @@ const AddSubCategory = ({ onClose }) => {
 
   return (
     <Formik
-      initialValues={{ name: "", category_id: "" }}
+      initialValues={{
+        name: editSubCategory?.name || "",
+        category_id: editSubCategory?.category_id || "",
+      }}
+      enableReinitialize={true}
       validationSchema={validationSchema}
       onSubmit={async (values, { resetForm }) => {
         setSubmitting(true);
         try {
-          const res = await authAxios.post("/sub-category", values);
-          fetchSuccess(res?.data?.message || "Subcategory added");
+          let res;
+          if (editSubCategory) {
+            // Edit mode
+            res = await authAxios.put(`/sub-category/${editSubCategory.sub_category_id}`, values);
+            fetchSuccess(res?.data?.message || "Subcategory updated");
+          } else {
+            // Add mode
+            res = await authAxios.post("/sub-category", values);
+            fetchSuccess(res?.data?.message || "Subcategory added");
+          }
+
           resetForm();
+          setEditSubCategory(null);
           if (onClose) onClose();
         } catch (err) {
           fetchError("Failed to add subcategory", err);
@@ -67,6 +82,7 @@ const AddSubCategory = ({ onClose }) => {
                   options={categories}
                   getOptionLabel={(option) => option.name}
                   loading={loading}
+                  value={categories.find((c) => c.category_id === values.category_id) || null}
                   onChange={(e, value) =>
                     setFieldValue("category_id", value ? value.category_id : "")
                   }
@@ -118,7 +134,14 @@ const AddSubCategory = ({ onClose }) => {
               >
                 Save
               </SoftButton>
-              <SoftButton variant="gradient" className="add-usr-button" onClick={onClose}>
+              <SoftButton
+                variant="gradient"
+                className="add-usr-button"
+                onClick={() => {
+                  setEditSubCategory(null);
+                  onClose();
+                }}
+              >
                 Cancel
               </SoftButton>
             </Grid>
@@ -128,5 +151,14 @@ const AddSubCategory = ({ onClose }) => {
     </Formik>
   );
 };
-
+AddSubCategory.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  editSubCategory: PropTypes.shape({
+    sub_category_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    category_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    is_active: PropTypes.bool,
+  }),
+  setEditSubCategory: PropTypes.func,
+};
 export default AddSubCategory;

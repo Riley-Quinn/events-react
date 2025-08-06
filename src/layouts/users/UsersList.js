@@ -190,10 +190,21 @@ const UsersList = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete} color="secondary">
+          <Button
+            onClick={handleCancelDelete}
+            variant="gradient"
+            className="add-usr-button"
+            color="secondary"
+          >
             Cancel
           </Button>
-          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+          <Button
+            onClick={handleConfirmDelete}
+            variant="gradient"
+            className="cancel-button"
+            color="error"
+            autoFocus
+          >
             Delete
           </Button>
         </DialogActions>
