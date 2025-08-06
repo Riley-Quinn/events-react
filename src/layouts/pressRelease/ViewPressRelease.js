@@ -170,10 +170,19 @@ const ViewPressRelease = () => {
                           {item.label}
                         </Typography>
                       </Grid>
-                      <Grid item xs={8}>
-                        <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
-                          {item.value}
-                        </Typography>
+                      <Grid item xs={12} md={8}>
+                        <Box
+                          sx={{
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                            maxHeight: { xs: 150, sm: 200, md: 250 }, // responsive height
+                            overflowY: "auto",
+                            pr: 1,
+                            width: "100%",
+                          }}
+                        >
+                          <Typography variant="body1">{item.value}</Typography>
+                        </Box>
                       </Grid>
                     </React.Fragment>
                   ))}
