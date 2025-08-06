@@ -21,18 +21,25 @@ import { useFetchUsers } from "contexts/fetchUsersContext";
 import { useAuthUser } from "contexts/userContext";
 import { useNavigate } from "react-router-dom";
 import Switch from "@mui/material/Switch";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
   description: Yup.string().required("Description is required"),
   location: Yup.string().required("Location is required"),
   category_id: Yup.number().typeError("Category must be selected").required("Category is required"),
-  assignee_id: Yup.string().required("Assignee is required"),
   sub_category_id: Yup.number().nullable(),
   status_id: Yup.number().typeError("Status is required").required("Status is required"),
   estimated_date: Yup.date().nullable(),
+  start_date: Yup.date().nullable(),
   is_important: Yup.boolean(),
-});
+  assignee_id: Yup.string().nullable(),
+  role_id: Yup.number().nullable(),
+}).test(
+  "assignee-or-role",
+  "Either assignee or role must be selected",
+  (values) => !!values.assignee_id || !!values.role_id
+);
 
 const AddTask = () => {
   const { fetchError, fetchSuccess } = useSnackbar();
@@ -44,6 +51,7 @@ const AddTask = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [taskStatusOptions, setTaskStatusOptions] = useState([]);
+  const [rolesList, setRolesList] = useState([]);
   console.log("Status options:", taskStatusOptions);
   useEffect(() => {
     const fetchCategories = async () => {
@@ -90,6 +98,18 @@ const AddTask = () => {
     fetchTaskStatuses();
   }, []);
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await authAxios.get("/roles/list/for-tasks");
+        setRolesList(res.data?.list || []);
+      } catch (err) {
+        console.error("Failed to fetch roles", err);
+      }
+    };
+    fetchRoles();
+  }, []);
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -103,10 +123,12 @@ const AddTask = () => {
             description: "",
             location: "",
             assignee_id: null,
+            role_id: null,
             category_id: null,
             sub_category_id: null,
             status_id: 1,
             estimated_date: "",
+            start_date: "",
             is_important: false,
           }}
           validationSchema={validationSchema}
@@ -118,10 +140,12 @@ const AddTask = () => {
               description: values.description,
               location: values.location,
               assignee_id: values.assignee_id,
+              role_id: values.role_id,
               category_id: values.category_id,
               sub_category_id: values.sub_category_id,
               status_id: values.status_id,
               estimated_date: values.estimated_date || null,
+              start_date: values.start_date || null,
               is_important: values.is_important || false,
             };
 
@@ -261,18 +285,62 @@ const AddTask = () => {
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
-                      Assigne
+                      Role
                     </SoftTypography>
                     <Autocomplete
-                      options={usersList.filter((user) => user.is_active)}
+                      options={rolesList}
+                      getOptionLabel={(option) => option.name}
+                      isOptionEqualToValue={(option, value) =>
+                        Number(option.role_id) === Number(value.role_id)
+                      }
+                      onChange={(e, value) => {
+                        setFieldValue("role_id", value ? value.role_id : null);
+                        setFieldValue("assignee_id", null); // reset assignee if role is picked
+                      }}
+                      value={
+                        rolesList.find((r) => Number(r.role_id) === Number(values.role_id)) || null
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          name="role_id"
+                          error={!!errors.role_id && touched.role_id}
+                          helperText={touched.role_id && errors.role_id}
+                        />
+                      )}
+                    />
+                    <SoftTypography
+                      variant="caption"
+                      sx={{
+                        mt: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        fontStyle: "italic",
+                        color: "gray",
+                      }}
+                    >
+                      <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                      If you select a role, all users under that role will be assigned.
+                    </SoftTypography>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Assignee To
+                    </SoftTypography>
+                    <Autocomplete
+                      options={usersList?.filter((user) => user.is_active)}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) => option.id === value.id}
                       onChange={(e, value) => {
                         setFieldValue("assignee_id", value ? value.id : null);
+                        setFieldValue("role_id", null);
                       }}
-                      value={usersList.find((user) => user.id === values.assignee_id) || null}
+                      value={usersList?.find((user) => user.id === values.assignee_id) || null}
                       renderOption={(props, option) => {
-                        const isSelf = option.id === user?.id; // define this variable
+                        const isSelf = option.id === user?.id;
                         return (
                           <li {...props}>
                             <span style={{ fontWeight: isSelf ? "bold" : "normal" }}>
@@ -291,6 +359,19 @@ const AddTask = () => {
                         />
                       )}
                     />
+                    <SoftTypography
+                      variant="caption"
+                      sx={{
+                        mt: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        fontStyle: "italic",
+                        color: "gray",
+                      }}
+                    >
+                      <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                      Only the selected user will get this task.
+                    </SoftTypography>
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -323,6 +404,26 @@ const AddTask = () => {
                           helperText={touched.status_id && errors.status_id}
                         />
                       )}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Start Date
+                    </SoftTypography>
+                    <TextField
+                      name="start_date"
+                      type="date"
+                      value={values.start_date}
+                      onChange={handleChange}
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.start_date && touched.start_date}
+                      helperText={touched.start_date && errors.start_date}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
                     />
                   </FormControl>
                 </Grid>

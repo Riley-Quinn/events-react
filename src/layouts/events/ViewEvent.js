@@ -67,7 +67,11 @@ const ViewEvent = () => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      await authAxios.post(`/media/upload/${id}`, formData);
+      await authAxios.post(`/media/upload/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setFile(null);
       fetchMedia();
     } catch (err) {

@@ -11,6 +11,7 @@ import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import { useFetchUsers } from "contexts/fetchUsersContext";
 import { useAuthUser } from "contexts/userContext";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
@@ -21,6 +22,7 @@ const validationSchema = Yup.object({
   sub_category_id: Yup.number().nullable(),
   status_id: Yup.number().required("Status is required"),
   estimated_date: Yup.date().nullable(),
+  start_date: Yup.date().nullable(),
 });
 
 const EditTask = () => {
@@ -35,6 +37,7 @@ const EditTask = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [rolesList, setRolesList] = useState([]);
 
   const [statuses, setStatuses] = useState([]);
 
@@ -77,8 +80,10 @@ const EditTask = () => {
           category_id: task?.category_id,
           sub_category_id: task?.sub_category_id || null,
           assignee_id: task?.assignee_id,
+          role_id: task?.role_id || null,
           status_id: task?.status_id,
           estimated_date: task?.estimated_date?.split("T")[0] || "",
+          start_date: task?.start_date?.split("T")[0] || "",
         });
 
         setSelectedCategoryId(task.category_id);
@@ -108,6 +113,18 @@ const EditTask = () => {
     fetchSubcategories();
   }, [selectedCategoryId, fetchError]);
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await authAxios.get("/roles/list/for-tasks");
+        setRolesList(res.data?.list || []);
+      } catch (err) {
+        fetchError("Failed to fetch roles");
+      }
+    };
+    fetchRoles();
+  }, [fetchError]);
+
   if (loading || !initialValues) return null;
 
   return (
@@ -128,14 +145,26 @@ const EditTask = () => {
                 description: values.description,
                 location: values.location,
                 assignee_id: values.assignee_id,
+                role_id: values.role_id,
                 category_id: values.category_id,
                 sub_category_id: values.sub_category_id,
-                status_id: values.status_id,
                 estimated_date: values.estimated_date || null,
+                start_date: values.start_date || null,
               };
 
-              const res = await authAxios.put(`/tasks/${task_id}`, updatedData);
-              fetchSuccess(res?.data?.message || "Task updated");
+              const taskStatus = values.status_id;
+
+              // Call main update
+              await authAxios.put(`/tasks/${task_id}`, updatedData);
+
+              // Call status update if status changed
+              if (taskStatus !== initialValues.status_id) {
+                await authAxios.put(`/tasks/${task_id}/status`, {
+                  status_id: taskStatus,
+                });
+              }
+
+              fetchSuccess("Task updated successfully");
               navigate("/tasks");
             } catch (err) {
               fetchError("Failed to update task");
@@ -264,20 +293,63 @@ const EditTask = () => {
                     </FormControl>
                   </Grid>
                 )}
-
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
-                      Assignee
+                      Role
                     </SoftTypography>
                     <Autocomplete
-                      options={usersList.filter((user) => user.is_active)}
+                      options={rolesList}
+                      getOptionLabel={(option) => option.name}
+                      isOptionEqualToValue={(option, value) =>
+                        Number(option.role_id) === Number(value.role_id)
+                      }
+                      onChange={(e, value) => {
+                        setFieldValue("role_id", value ? value.role_id : null);
+                        setFieldValue("assignee_id", null); // reset user if role selected
+                      }}
+                      value={
+                        rolesList.find((r) => Number(r.role_id) === Number(values.role_id)) || null
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          name="role_id"
+                          error={!!errors.role_id && touched.role_id}
+                          helperText={touched.role_id && errors.role_id}
+                        />
+                      )}
+                    />
+                    <SoftTypography
+                      variant="caption"
+                      sx={{
+                        mt: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        fontStyle: "italic",
+                        color: "gray",
+                      }}
+                    >
+                      <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                      If you select a role, all users under that role will be assigned.
+                    </SoftTypography>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Assignee To
+                    </SoftTypography>
+                    <Autocomplete
+                      options={usersList?.filter((user) => user.is_active)}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) => option.id === value.id}
                       onChange={(e, value) => {
                         setFieldValue("assignee_id", value ? value.id : null);
+                        setFieldValue("role_id", null);
                       }}
-                      value={usersList.find((user) => user.id === values.assignee_id) || null}
+                      value={usersList?.find((user) => user.id === values.assignee_id) || null}
                       renderOption={(props, option) => {
                         const isSelf = option.id === user?.id; // define this variable
                         return (
@@ -296,7 +368,20 @@ const EditTask = () => {
                           helperText={touched.assignee_id && errors.assignee_id}
                         />
                       )}
-                    />
+                    />{" "}
+                    <SoftTypography
+                      variant="caption"
+                      sx={{
+                        mt: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        fontStyle: "italic",
+                        color: "gray",
+                      }}
+                    >
+                      <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                      Only the selected user will get this task.
+                    </SoftTypography>
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -322,6 +407,24 @@ const EditTask = () => {
                           helperText={touched.status_id && errors.status_id}
                         />
                       )}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      Start Date
+                    </SoftTypography>
+                    <TextField
+                      name="start_date"
+                      type="date"
+                      value={values.start_date}
+                      onChange={handleChange}
+                      variant="outlined"
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.start_date && touched.start_date}
+                      helperText={touched.start_date && errors.start_date}
                     />
                   </FormControl>
                 </Grid>
