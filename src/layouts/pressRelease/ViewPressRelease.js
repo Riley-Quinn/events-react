@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import authAxios from "authAxios";
+import { useMediaQuery, useTheme } from "@mui/material";
 import {
   Box,
   Typography,
@@ -54,6 +55,10 @@ const ViewPressRelease = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const shareText = pressRelease ? `${pressRelease.title}\n\n${pressRelease.notes}` : "";
+
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm")); // mobile
+  const isSm = useMediaQuery(theme.breakpoints.between("sm", "md")); // tablet
 
   const getShareUrl = (platform, shareText) => {
     const encodedMessage = encodeURIComponent(shareText);
@@ -231,26 +236,35 @@ const ViewPressRelease = () => {
                     { label: "Status", value: pressRelease.status_name },
                   ].map((item, index) => (
                     <React.Fragment key={index}>
-                      <Grid item xs={4}>
+                      {/* Label */}
+                      <Grid
+                        item
+                        xs={12}
+                        sm={4}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
                         <Typography variant="subtitle1" fontWeight="bold">
                           {item.label}
                         </Typography>
                       </Grid>
+
+                      {/* Value */}
                       <Grid
                         item
-                        xs={8}
+                        xs={12}
+                        sm={8}
                         sx={{
                           whiteSpace: "pre-wrap",
                           wordBreak: "break-word",
-                          maxHeight: { xs: 150, sm: 200, md: 250 }, // responsive height
+                          maxHeight: { xs: "none", sm: 200 }, // no limit on mobile, scroll on larger
                           overflowY: "auto",
                           pr: 1,
-                          width: "100%",
                         }}
                       >
-                        <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
-                          {item.value}
-                        </Typography>
+                        <Typography variant="body1">{item.value}</Typography>
                       </Grid>
                     </React.Fragment>
                   ))}
@@ -309,7 +323,7 @@ const ViewPressRelease = () => {
               </Box>
             </Grid>
           </Grid>
-          <ImageList cols={3} gap={16}>
+          <ImageList cols={isXs ? 1 : isSm ? 2 : 3} gap={16}>
             {media.map((item) => {
               const fileUrl = getFileUrl(item.url);
               const isVideo = item.url.match(/\.(mp4|webm|ogg)$/i);
@@ -318,25 +332,18 @@ const ViewPressRelease = () => {
               return (
                 <ImageListItem key={item.image_id} sx={{ position: "relative" }}>
                   {isVideo ? (
-                    <video
-                      src={fileUrl}
-                      controls
-                      onClick={() => handleMediaClick(item)}
-                      style={{ width: "100%", height: 300, borderRadius: 8 }}
-                    />
+                    <video src={fileUrl} controls style={{ width: "100%", borderRadius: 8 }} />
                   ) : isPdf ? (
                     <iframe
                       src={fileUrl}
                       title="PDF"
                       style={{ width: "100%", height: 300, border: "none", borderRadius: 8 }}
-                      onClick={() => handleMediaClick(item)}
                     />
                   ) : (
                     <img
                       src={fileUrl}
                       alt="media"
-                      loading="lazy"
-                      style={{ width: "100%", height: 300, borderRadius: 8, cursor: "pointer" }}
+                      style={{ width: "100%", borderRadius: 8, cursor: "pointer" }}
                       onClick={() => handleMediaClick(item)}
                     />
                   )}
@@ -402,8 +409,14 @@ const ViewPressRelease = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-              <Button onClick={handleConfirmDelete} color="error" variant="contained">
+              <Button
+                variant="gradient"
+                className="cancel-button"
+                onClick={() => setConfirmOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmDelete} className="add-usr-button" variant="gradient">
                 Delete
               </Button>
             </DialogActions>
@@ -495,7 +508,13 @@ const ViewPressRelease = () => {
               </Box>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setShareDialogOpen(false)}>Close</Button>
+              <Button
+                variant="gradient"
+                className="cancel-button"
+                onClick={() => setShareDialogOpen(false)}
+              >
+                Close
+              </Button>
             </DialogActions>
           </Dialog>
         </Grid>

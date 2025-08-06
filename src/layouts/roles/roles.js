@@ -163,16 +163,17 @@ const ManageRoles = () => {
           return (
             <>
               <Button
-                variant="contained"
+                variant="gradient"
                 className="add-usr-button"
                 size="small"
+                sx={{ mr: 1 }}
                 onClick={() => handleEditClick(role)}
               >
                 Edit
               </Button>
               <Button
-                variant="contained"
-                className="delete-btn"
+                variant="gradient"
+                className="cancel-button"
                 size="small"
                 onClick={() => handleDeleteClick(role.id)}
               >
@@ -269,10 +270,15 @@ const ManageRoles = () => {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCancelDelete} color="secondary">
+            <Button onClick={handleCancelDelete} className="add-usr-button" variant="gradient">
               Cancel
             </Button>
-            <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            <Button
+              onClick={handleConfirmDelete}
+              className="cancel-button"
+              variant="gradient"
+              autoFocus
+            >
               Delete
             </Button>
           </DialogActions>

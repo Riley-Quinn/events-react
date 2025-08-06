@@ -144,12 +144,17 @@ const ViewTask = () => {
         </Typography>
         <Grid sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <Grid item xs={12} md={12} sm={12}>
-            <Card sx={{ ...sectionStyle, height: "300px" }}>
+            <Card sx={{ ...sectionStyle, minHeight: 200, overflowX: "auto" }}>
               <CardContent>
-                {/* Status Tracker */}
                 <div style={{ width: "100%", marginTop: 20 }}>
-                  <h3>Status Tracker</h3>
-                  <Stepper alternativeLabel connector={<ColorConnector />}>
+                  <Typography variant="h6" gutterBottom>
+                    Status Tracker
+                  </Typography>
+                  <Stepper
+                    alternativeLabel
+                    connector={<ColorConnector />}
+                    sx={{ flexWrap: "wrap", justifyContent: "center" }}
+                  >
                     {statusFlow.map((step, index) => (
                       <Step key={index} completed>
                         <StepLabel
@@ -185,10 +190,16 @@ const ViewTask = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Box
-                sx={{ ...sectionStyle, height: "600px", display: "flex", flexDirection: "column" }}
+                sx={{
+                  ...sectionStyle,
+                  minHeight: 400,
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
+                }}
               >
                 <Box sx={{ flex: 1 }}>
-                  <Grid container spacing={2}>
+                  <Grid container spacing={2} flexWrap="wrap">
                     {[
                       { label: "Title", value: task.title },
                       { label: "Category", value: task.category_name },
@@ -198,18 +209,18 @@ const ViewTask = () => {
                       { label: "Description", value: task.description },
                     ].map((item, index) => (
                       <React.Fragment key={index}>
-                        <Grid item xs={4}>
+                        <Grid item xs={12} sm={4}>
                           <Typography variant="subtitle1" fontWeight="bold">
                             {item.label}
                           </Typography>
                         </Grid>
                         <Grid
                           item
-                          xs={8}
+                          xs={12}
+                          sm={8}
                           sx={{
                             whiteSpace: "pre-wrap",
                             wordBreak: "break-word",
-                            maxHeight: { xs: 150, sm: 200, md: 250 }, // responsive height
                             overflowY: "auto",
                             pr: 1,
                             width: "100%",
@@ -229,6 +240,7 @@ const ViewTask = () => {
                 </Box>
               </Box>
             </Grid>
+
             {/* Comment Section */}
             <Grid item xs={12} md={6}>
               <Box sx={{ flex: 1, height: "600px" }}>

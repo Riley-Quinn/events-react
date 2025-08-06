@@ -61,6 +61,7 @@ const CommentBox = ({ module, moduleId }) => {
   const [comments, setComments] = useState([]);
   const { user } = useAuthUser();
   const messagesEndRef = useRef(null);
+  const commentListRef = useRef(null);
   const fetchAllComments = async () => {
     try {
       const response = await authAxios.get(`/comments/${moduleId}`, {
@@ -91,8 +92,8 @@ const CommentBox = ({ module, moduleId }) => {
   }, [module, moduleId]);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (commentListRef.current) {
+      commentListRef.current.scrollTop = commentListRef.current.scrollHeight;
     }
   }, [comments]);
 
@@ -128,7 +129,7 @@ const CommentBox = ({ module, moduleId }) => {
       <Divider sx={{ mb: 2 }} />
 
       {/* Scrollable Comments */}
-      <CommentList>
+      <CommentList ref={commentListRef}>
         {comments.map((cmt, i) => {
           const isSender = cmt.commented_by === user?.id;
 
