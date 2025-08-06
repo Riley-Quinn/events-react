@@ -164,7 +164,8 @@ const ViewTask = () => {
                             step.changed_at && step.changed_by ? (
                               <Typography variant="caption">
                                 Created by {step.changed_by}
-                                <br />
+                                
+
                                 {new Date(step.changed_at).toLocaleString("en-IN", {
                                   timeZone: "Asia/Kolkata",
                                   day: "2-digit",
@@ -268,3 +269,4 @@ const ViewTask = () => {
 };
 
 export default ViewTask;
+ 
