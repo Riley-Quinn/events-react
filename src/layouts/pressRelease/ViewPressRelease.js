@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import authAxios from "authAxios";
+import { useMediaQuery, useTheme } from "@mui/material";
 import {
   Box,
   Typography,
@@ -16,11 +17,22 @@ import {
   DialogActions,
   TextField,
   IconButton,
+  Tooltip,
 } from "@mui/material";
+import ShareIcon from "@mui/icons-material/Share";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import CommentBox from "layouts/Comments";
 import DeleteIcon from "@mui/icons-material/Delete";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import TwitterIcon from "@mui/icons-material/Twitter";
+import EmailIcon from "@mui/icons-material/Email";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
+
 const MEDIA_BASE_URL = "https://d108ysp6ovb3mv.cloudfront.net";
 
 const ViewPressRelease = () => {
@@ -36,6 +48,50 @@ const ViewPressRelease = () => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedMediaId, setSelectedMediaId] = useState(null);
+
+  const [error, setError] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareText = pressRelease ? `${pressRelease.title}\n\n${pressRelease.notes}` : "";
+
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm")); // mobile
+  const isSm = useMediaQuery(theme.breakpoints.between("sm", "md")); // tablet
+
+  const getShareUrl = (platform, shareText) => {
+    const encodedMessage = encodeURIComponent(shareText);
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    switch (platform) {
+      case "whatsapp":
+        return isMobile
+          ? `https://api.whatsapp.com/send?text=${encodedMessage}`
+          : `https://web.whatsapp.com/send?text=${encodedMessage}`;
+
+      case "twitter":
+        return `https://x.com/intent/tweet?text=${encodedMessage}`;
+
+      case "linkedin":
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedMessage}`;
+
+      case "facebook":
+        return `https://www.facebook.com/sharer/sharer.php?u=${encodedMessage}`;
+
+      case "instagram":
+        // ❌ Instagram doesn’t support direct text share via URL
+        // Workaround: copy text, then open Instagram
+        return `https://www.instagram.com/`;
+
+      case "email":
+        return `mailto:?body=${encodedMessage}`;
+
+      default:
+        return "#";
+    }
+  };
+
   useEffect(() => {
     const fetchPressRelease = async () => {
       try {
@@ -60,17 +116,33 @@ const ViewPressRelease = () => {
     }
   };
 
+  // Reset disable state when media count changes
+  useEffect(() => {
+    if (media.length < MAX_UPLOADS) {
+      setIsDisabled(false);
+      setError("");
+    }
+  }, [media.length]);
+
+  const MAX_UPLOADS = 4;
+
   const handleUpload = async () => {
     if (!file) return;
+
+    if (media.length >= MAX_UPLOADS) {
+      setError(`You can't upload more than ${MAX_UPLOADS} files.`);
+      setIsDisabled(true); // disable after showing error
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("file", file);
       await authAxios.post(`/press-media/upload/${pressId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setFile(null);
+      setError(""); // clear error if upload successful
       fetchMedia();
     } catch (err) {
       console.error("Upload failed", err);
@@ -143,7 +215,6 @@ const ViewPressRelease = () => {
         <Typography variant="h4" gutterBottom mb={2}>
           Press Release Details
         </Typography>
-
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Box
@@ -165,24 +236,35 @@ const ViewPressRelease = () => {
                     { label: "Status", value: pressRelease.status_name },
                   ].map((item, index) => (
                     <React.Fragment key={index}>
-                      <Grid item xs={4}>
+                      {/* Label */}
+                      <Grid
+                        item
+                        xs={12}
+                        sm={4}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
                         <Typography variant="subtitle1" fontWeight="bold">
                           {item.label}
                         </Typography>
                       </Grid>
-                      <Grid item xs={12} md={8}>
-                        <Box
-                          sx={{
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                            maxHeight: { xs: 150, sm: 200, md: 250 }, // responsive height
-                            overflowY: "auto",
-                            pr: 1,
-                            width: "100%",
-                          }}
-                        >
-                          <Typography variant="body1">{item.value}</Typography>
-                        </Box>
+
+                      {/* Value */}
+                      <Grid
+                        item
+                        xs={12}
+                        sm={8}
+                        sx={{
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
+                          maxHeight: { xs: "none", sm: 200 }, // no limit on mobile, scroll on larger
+                          overflowY: "auto",
+                          pr: 1,
+                        }}
+                      >
+                        <Typography variant="body1">{item.value}</Typography>
                       </Grid>
                     </React.Fragment>
                   ))}
@@ -213,20 +295,35 @@ const ViewPressRelease = () => {
                 <TextField
                   fullWidth
                   type="file"
+                  disabled={isDisabled}
                   onChange={(e) => setFile(e.target.files[0])}
                   inputProps={{
                     accept:
                       "image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                   }}
+                  helperText={error}
+                  error={!!error}
                 />
-                <Button variant="contained" onClick={handleUpload} className="add-usr-button">
+                <Button
+                  variant="contained"
+                  onClick={handleUpload}
+                  className="add-usr-button"
+                  disabled={isDisabled}
+                >
                   Upload
+                </Button>
+                <Button
+                  variant="gradient"
+                  className="add-usr-button"
+                  startIcon={<ShareIcon />}
+                  onClick={() => setShareDialogOpen(true)}
+                >
+                  Share
                 </Button>
               </Box>
             </Grid>
           </Grid>
-
-          <ImageList cols={3} gap={16}>
+          <ImageList cols={isXs ? 1 : isSm ? 2 : 3} gap={16}>
             {media.map((item) => {
               const fileUrl = getFileUrl(item.url);
               const isVideo = item.url.match(/\.(mp4|webm|ogg)$/i);
@@ -235,25 +332,18 @@ const ViewPressRelease = () => {
               return (
                 <ImageListItem key={item.image_id} sx={{ position: "relative" }}>
                   {isVideo ? (
-                    <video
-                      src={fileUrl}
-                      controls
-                      onClick={() => handleMediaClick(item)}
-                      style={{ width: "100%", height: 300, borderRadius: 8 }}
-                    />
+                    <video src={fileUrl} controls style={{ width: "100%", borderRadius: 8 }} />
                   ) : isPdf ? (
                     <iframe
                       src={fileUrl}
                       title="PDF"
                       style={{ width: "100%", height: 300, border: "none", borderRadius: 8 }}
-                      onClick={() => handleMediaClick(item)}
                     />
                   ) : (
                     <img
                       src={fileUrl}
                       alt="media"
-                      loading="lazy"
-                      style={{ width: "100%", height: 300, borderRadius: 8, cursor: "pointer" }}
+                      style={{ width: "100%", borderRadius: 8, cursor: "pointer" }}
                       onClick={() => handleMediaClick(item)}
                     />
                   )}
@@ -273,7 +363,6 @@ const ViewPressRelease = () => {
               );
             })}
           </ImageList>
-
           {/* Preview Dialog */}
           {selectedMedia && (
             <Dialog open={isDialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
@@ -311,7 +400,6 @@ const ViewPressRelease = () => {
               </DialogActions>
             </Dialog>
           )}
-
           {/* Confirm Delete Dialog */}
           <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
             <DialogTitle>Confirm Deletion</DialogTitle>
@@ -321,9 +409,111 @@ const ViewPressRelease = () => {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-              <Button onClick={handleConfirmDelete} color="error" variant="contained">
+              <Button
+                variant="gradient"
+                className="cancel-button"
+                onClick={() => setConfirmOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmDelete} className="add-usr-button" variant="gradient">
                 Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={shareDialogOpen}
+            onClose={() => setShareDialogOpen(false)}
+            maxWidth="xs"
+            fullWidth
+          >
+            <DialogTitle>Share Press Release</DialogTitle>
+            <DialogContent>
+              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                {/* WhatsApp */}
+                <IconButton
+                  component="a"
+                  href={getShareUrl("whatsapp", shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "green" }}
+                >
+                  <WhatsAppIcon />
+                </IconButton>
+
+                {/* LinkedIn */}
+                <IconButton
+                  component="a"
+                  href={getShareUrl("linkedin", shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "#0077B5" }}
+                >
+                  <LinkedInIcon />
+                </IconButton>
+
+                {/* Facebook */}
+                <IconButton
+                  component="a"
+                  href={getShareUrl("facebook", shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "#1877F2" }}
+                >
+                  <FacebookIcon />
+                </IconButton>
+
+                {/* Instagram */}
+                <IconButton
+                  component="a"
+                  href={getShareUrl("instagram", shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "#E1306C" }}
+                >
+                  <InstagramIcon />
+                </IconButton>
+
+                {/* Twitter */}
+                <IconButton
+                  component="a"
+                  href={getShareUrl("twitter", shareText)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: "#1DA1F2" }}
+                >
+                  <TwitterIcon />
+                </IconButton>
+
+                {/* Email */}
+                <IconButton
+                  component="a"
+                  href={getShareUrl("email", shareText)}
+                  sx={{ color: "red" }}
+                >
+                  <EmailIcon />
+                </IconButton>
+
+                {/* Copy to Clipboard */}
+                <IconButton
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareText);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1000); // reset after 1s
+                  }}
+                  sx={{ color: copied ? "green" : "gray" }}
+                >
+                  {copied ? <CheckIcon /> : <ContentCopyIcon />}
+                </IconButton>
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                variant="gradient"
+                className="cancel-button"
+                onClick={() => setShareDialogOpen(false)}
+              >
+                Close
               </Button>
             </DialogActions>
           </Dialog>

@@ -1,5 +1,3 @@
-//SubCategoriesList.js
-
 import * as React from "react";
 import { Dialog, DialogTitle, DialogContent, Card } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -12,6 +10,9 @@ import authAxios from "authAxios";
 import Switch from "@mui/material/Switch";
 import dayjs from "dayjs";
 import AddSubCategory from "./AddSubCategory";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 const getMuiTheme = (theme) =>
   createTheme({
     components: {
@@ -35,6 +36,10 @@ const SubCategoriesList = () => {
   const [categoryData, setCategoryData] = React.useState([]);
   const [isAddOpen, setIsAddOpen] = React.useState(false);
   const [subCategories, setSubCategories] = React.useState([]);
+  const [editSubCategory, setEditSubCategory] = React.useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = React.useState(null);
+  const subcategoryData = subCategories || [];
 
   const fetchData = React.useCallback(async () => {
     try {
@@ -103,6 +108,39 @@ const SubCategoriesList = () => {
         },
       },
     },
+    {
+      name: "Actions",
+      label: "Actions",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRenderLite: (dataIndex) => {
+          const row = subcategoryData[dataIndex];
+          return (
+            <>
+              <IconButton
+                color="primary"
+                onClick={() => {
+                  setEditSubCategory(row);
+                  setIsAddOpen(true);
+                }}
+              >
+                <EditIcon />
+              </IconButton>
+              <IconButton
+                color="error"
+                onClick={() => {
+                  setSelectedSubCategoryId(row.sub_category_id);
+                  setDeleteDialogOpen(true);
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </>
+          );
+        },
+      },
+    },
   ];
   console.log("Subcategories:", subCategories);
   return (
@@ -113,7 +151,10 @@ const SubCategoriesList = () => {
           <SoftButton
             variant="gradient"
             className="add-usr-button"
-            onClick={() => setIsAddOpen(true)}
+            onClick={() => {
+              setEditSubCategory(null);
+              setIsAddOpen(true);
+            }}
           >
             Add Sub-Category
           </SoftButton>
@@ -139,17 +180,58 @@ const SubCategoriesList = () => {
         </SoftBox>
       </Card>
 
-      <Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Sub-Category</DialogTitle>
+      <Dialog
+        open={isAddOpen}
+        onClose={() => {
+          setIsAddOpen(false);
+          setEditSubCategory(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{editSubCategory ? "Edit Sub-Category" : "Add New Sub-Category"}</DialogTitle>
         <DialogContent>
           <AddSubCategory
-            // categories={categoryData}
+            categories={categoryData}
             onClose={() => {
               setIsAddOpen(false);
-              fetchData();
               subcatfetch();
             }}
+            editSubCategory={editSubCategory}
+            setEditSubCategory={setEditSubCategory}
           />
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <p>Are you sure you want to delete this sub-category?</p>
+          <div
+            style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" }}
+          >
+            <SoftButton
+              onClick={() => setDeleteDialogOpen(false)}
+              variant="gradient"
+              className="add-usr-button"
+            >
+              Cancel
+            </SoftButton>
+            <SoftButton
+              variant="gradient"
+              className="cancel-button"
+              onClick={async () => {
+                try {
+                  await authAxios.delete(`/sub-category/${selectedSubCategoryId}`);
+                  setDeleteDialogOpen(false);
+                  subcatfetch(); // refresh data
+                } catch (err) {
+                  console.error("Delete failed", err);
+                }
+              }}
+            >
+              Delete
+            </SoftButton>
+          </div>
         </DialogContent>
       </Dialog>
     </DashboardLayout>

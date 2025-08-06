@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Box,
   TextField,
@@ -16,7 +16,8 @@ import "emoji-mart/css/emoji-mart.css";
 import { format } from "timeago.js";
 import authAxios from "authAxios";
 import PropTypes from "prop-types";
-
+import socket from "../Socket/Socket";
+import { useAuthUser } from "contexts/userContext";
 const BG_COLOR = "#f9f9f9";
 
 // Container with fixed height and background
@@ -36,6 +37,7 @@ const CommentList = styled(Box)({
   overflowY: "auto",
   paddingRight: 8, // prevents scrollbar overlap
   marginBottom: 16,
+  maxHeight: "calc(100vh - 250px)",
 });
 
 // Single comment block styling
@@ -57,7 +59,9 @@ const CommentBox = ({ module, moduleId }) => {
   const [comment, setComment] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [comments, setComments] = useState([]);
-
+  const { user } = useAuthUser();
+  const messagesEndRef = useRef(null);
+  const commentListRef = useRef(null);
   const fetchAllComments = async () => {
     try {
       const response = await authAxios.get(`/comments/${moduleId}`, {
@@ -74,36 +78,49 @@ const CommentBox = ({ module, moduleId }) => {
 
   useEffect(() => {
     fetchAllComments();
-  }, []);
+
+    // join the room
+    socket.emit("join_room", { module, moduleId });
+    // listen for new comments
+    socket.on("new_comment", (newComment) => {
+      setComments((prev) => [...prev, newComment]);
+    });
+
+    return () => {
+      socket.off("new_comment"); // cleanup
+    };
+  }, [module, moduleId]);
+
+  useEffect(() => {
+    if (commentListRef.current) {
+      commentListRef.current.scrollTop = commentListRef.current.scrollHeight;
+    }
+  }, [comments]);
 
   const handleEmojiSelect = (emoji) => {
     setComment(comment + emoji.native);
   };
 
   const handleSubmit = async () => {
-    if (comment.trim() !== "") {
-      try {
-        await authAxios.post(
-          "/comments",
-          {
-            comment: comment,
-          },
-          {
-            params: {
-              module: module,
-              moduleId: moduleId,
-            },
-          }
-        );
-        fetchAllComments();
-        setComment("");
-        setShowEmojiPicker(false);
-      } catch (error) {
-        console.error("Error posting comments", error);
-      }
+    if (!comment.trim()) return;
+
+    try {
+      const res = await authAxios.post("/comments", { comment }, { params: { module, moduleId } });
+
+      const savedComment = res.data; // assume API returns saved comment object
+      // emit to others in room
+      // socket.emit("new_comment", { ...savedComment, module, moduleId });
+
+      // update UI immediately
+      // setComments((prev) => [...prev, savedComment]);
+
+      setComment("");
+      setShowEmojiPicker(false);
+    } catch (err) {
+      console.error("Error posting comment", err);
     }
   };
-
+  console.log("comments", comments);
   return (
     <CommentContainer>
       <Typography variant="h6" gutterBottom>
@@ -112,23 +129,56 @@ const CommentBox = ({ module, moduleId }) => {
       <Divider sx={{ mb: 2 }} />
 
       {/* Scrollable Comments */}
-      <CommentList>
-        {comments.map((cmt, i) => (
-          <SingleComment key={i}>
-            <Avatar sx={{ width: 32, height: 32 }}>{cmt.commented_username[0]}</Avatar>
-            <Box width="100%">
-              <Box display="flex" justifyContent="space-between">
-                <Typography variant="subtitle2">{cmt.commented_username}</Typography>
-                <Typography variant="caption" color="text.secondary">
+      <CommentList ref={commentListRef}>
+        {comments.map((cmt, i) => {
+          const isSender = cmt.commented_by === user?.id;
+
+          return (
+            <Box
+              key={i}
+              display="flex"
+              justifyContent={isSender ? "flex-end" : "flex-start"}
+              mb={2}
+            >
+              {!isSender && (
+                <Avatar sx={{ width: 32, height: 32, mr: 1 }}>
+                  {cmt.commented_username ? cmt.commented_username[0] : "U"}
+                </Avatar>
+              )}
+
+              <Paper
+                sx={{
+                  p: 1.5,
+                  maxWidth: "60%",
+                  bgcolor: isSender ? "#DCF8C6" : "#fff",
+                  borderRadius: 2,
+                  boxShadow: 1,
+                  wordBreak: "break-word",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                <Typography variant="subtitle2" color="text.secondary">
+                  {cmt.commented_username}
+                </Typography>
+                <Typography variant="body2">{cmt.comment}</Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", textAlign: "right", mt: 0.5 }}
+                >
                   {format(cmt.created_at)}
                 </Typography>
-              </Box>
-              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-                {cmt.comment}
-              </Typography>
+              </Paper>
+
+              {isSender && (
+                <Avatar sx={{ width: 32, height: 32, ml: 1 }}>
+                  {cmt.commented_username ? cmt.commented_username[0] : "U"}
+                </Avatar>
+              )}
             </Box>
-          </SingleComment>
-        ))}
+          );
+        })}
+        <div ref={messagesEndRef} />
       </CommentList>
 
       {/* Comment Input */}

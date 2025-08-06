@@ -161,10 +161,10 @@ const Birthdays = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenAdd(false)} className="cancel-button">
+            <Button onClick={() => setOpenAdd(false)} variant="gradient" className="cancel-button">
               Cancel
             </Button>
-            <Button variant="contained" onClick={handleAddBirthday} className="add-usr-button">
+            <Button variant="gradient" onClick={handleAddBirthday} className="add-usr-button">
               Add
             </Button>
           </DialogActions>

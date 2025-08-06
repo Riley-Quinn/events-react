@@ -310,19 +310,6 @@ const AddTask = () => {
                         />
                       )}
                     />
-                    <SoftTypography
-                      variant="caption"
-                      sx={{
-                        mt: 1,
-                        display: "flex",
-                        alignItems: "center",
-                        fontStyle: "italic",
-                        color: "gray",
-                      }}
-                    >
-                      <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                      If you select a role, all users under that role will be assigned.
-                    </SoftTypography>
                   </FormControl>
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -359,20 +346,24 @@ const AddTask = () => {
                         />
                       )}
                     />
-                    <SoftTypography
-                      variant="caption"
-                      sx={{
-                        mt: 1,
-                        display: "flex",
-                        alignItems: "center",
-                        fontStyle: "italic",
-                        color: "gray",
-                      }}
-                    >
-                      <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                      Only the selected user will get this task.
-                    </SoftTypography>
                   </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <SoftTypography
+                    variant="caption"
+                    sx={{
+                      mt: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      fontStyle: "italic",
+                      color: "gray",
+                    }}
+                  >
+                    <InfoOutlinedIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                    To assign the task to a group of users, please select a Role — all users under
+                    that role will receive the task. To assign the task to an individual, please use
+                    the Assign To option.
+                  </SoftTypography>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>

@@ -7,8 +7,6 @@ import authAxios from "authAxios";
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   TextField,
   Button,
   Grid,
@@ -22,6 +20,7 @@ import {
   ImageListItem,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddPressReleaseModal from "./AddPressReleaseModal";
 
 const MEDIA_BASE_URL = "https://d108ysp6ovb3mv.cloudfront.net";
 
@@ -38,6 +37,11 @@ const ViewEvent = () => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedMediaId, setSelectedMediaId] = useState(null);
+
+  const [error, setError] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  const [openPressDialog, setOpenPressDialog] = useState(false);
 
   useEffect(() => {
     fetchEventDetails();
@@ -61,23 +65,36 @@ const ViewEvent = () => {
       console.error("Failed to load media", err);
     }
   };
-
+  const MAX_UPLOADS = 4;
   const handleUpload = async () => {
     if (!file) return;
+
+    if (media.length >= MAX_UPLOADS) {
+      setError(`You can't upload more than ${MAX_UPLOADS} files.`);
+      setIsDisabled(true); // disable after showing error
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("file", file);
       await authAxios.post(`/media/upload/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setFile(null);
+      setError(""); // clear error on successful upload
       fetchMedia();
     } catch (err) {
       console.error("Upload failed", err);
     }
   };
+
+  useEffect(() => {
+    if (media.length < MAX_UPLOADS) {
+      setIsDisabled(false);
+      setError("");
+    }
+  }, [media.length]);
 
   const handleMediaClick = (item) => {
     setSelectedMedia(item);
@@ -105,11 +122,29 @@ const ViewEvent = () => {
       setSelectedMediaId(null);
     }
   };
+  const formatDate = (d) => {
+    if (!d) return "";
+    const date = new Date(d); // parse UTC ISO
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`; // YYYY-MM-DD in local timezone
+  };
+
+  const formatTime = (t) => {
+    if (!t) return "";
+    return t.slice(0, 5); // HH:mm
+  };
 
   const getFileUrl = (url) => `${MEDIA_BASE_URL}/${url}`;
 
   if (!event) return <div>Loading...</div>;
-
+  const handleOpenModal = () => {
+    setOpenPressDialog(true);
+  };
+  const handleCloseModal = () => {
+    setOpenPressDialog(false);
+  };
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -151,7 +186,7 @@ const ViewEvent = () => {
             </Typography>
           </Grid>
           <Grid item sm={9}>
-            <Typography variant="body1">: {event.date}</Typography>
+            <Typography variant="body1">: {formatDate(event.date)}</Typography>
           </Grid>
 
           <Grid item sm={3}>
@@ -161,7 +196,7 @@ const ViewEvent = () => {
           </Grid>
           <Grid item sm={9}>
             <Typography variant="body1">
-              :{event.time === "00:00:00" ? "All Day" : event.time}
+              :{event.time === "00:00:00" ? "All Day" : formatTime(event.time)}
             </Typography>
           </Grid>
         </Grid>
@@ -173,14 +208,26 @@ const ViewEvent = () => {
         <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 4 }}>
           <TextField
             type="file"
+            disabled={isDisabled}
             onChange={(e) => setFile(e.target.files[0])}
             inputProps={{
               accept:
                 "image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             }}
+            helperText={error}
+            error={!!error}
           />
-          <Button variant="contained" onClick={handleUpload} className="add-usr-button">
+          <Button
+            variant="contained"
+            onClick={handleUpload}
+            className="add-usr-button"
+            disabled={isDisabled}
+          >
             Upload
+          </Button>
+
+          <Button variant="contained" className="add-usr-button" onClick={() => handleOpenModal()}>
+            Add Press Release
           </Button>
         </Box>
 
@@ -290,6 +337,7 @@ const ViewEvent = () => {
           </DialogActions>
         </Dialog>
       </Box>
+      <AddPressReleaseModal open={openPressDialog} onClose={handleCloseModal} />
     </DashboardLayout>
   );
 };

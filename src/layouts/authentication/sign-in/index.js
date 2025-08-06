@@ -26,7 +26,7 @@ import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 import SoftInput from "components/SoftInput";
 import SoftButton from "components/SoftButton";
-import axios from "axios";
+import authAxios from "authAxios";
 // Authentication layout components
 import CoverLayout from "layouts/authentication/components/CoverLayout";
 
@@ -42,7 +42,7 @@ function SignIn() {
   const navigate = useNavigate();
   const handleLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:4000/api/auth/login", {
+      const res = await authAxios.post("/auth/login", {
         email,
         password,
       });

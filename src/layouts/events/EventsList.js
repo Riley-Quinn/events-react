@@ -20,6 +20,19 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
+const formatDate = (d) => {
+  if (!d) return "";
+  const date = new Date(d); // parse UTC ISO
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`; // YYYY-MM-DD in local timezone
+};
+
+const formatTime = (t) => {
+  if (!t) return "";
+  return t.slice(0, 5); // HH:mm
+};
 
 const EventsCalendar = () => {
   const [events, setEvents] = useState([]);
@@ -93,7 +106,20 @@ const EventsCalendar = () => {
   };
 
   const CustomEvent = ({ event }) => {
-    return <span>{event.title}</span>;
+    return (
+      <span
+        title={event.title}
+        style={{
+          display: "block",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: "100%",
+        }}
+      >
+        {event.title}
+      </span>
+    );
   };
 
   return (
@@ -138,13 +164,13 @@ const EventsCalendar = () => {
                   <strong>Location:</strong> {selectedEvent.resource.location}
                 </p>
                 <p>
-                  <strong>Date:</strong> {selectedEvent.resource.date}
+                  <strong>Date:</strong> {formatDate(selectedEvent.resource.date)}
                 </p>
                 <p>
                   <strong>Time:</strong>{" "}
                   {selectedEvent.resource.time === "00:00:00"
                     ? "All Day"
-                    : selectedEvent.resource.time}
+                    : formatTime(selectedEvent.resource.time)}
                 </p>
               </Box>
             )}
