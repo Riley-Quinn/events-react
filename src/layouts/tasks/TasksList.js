@@ -29,6 +29,16 @@ import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import authAxios from "authAxios";
 import { Visibility } from "@mui/icons-material";
 import { Tooltip, Typography } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -47,6 +57,13 @@ const options = {
   selectableRows: "none",
   selectableRowsHeader: false,
   elevation: 0,
+};
+
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
 };
 
 const TasksList = () => {
@@ -75,6 +92,12 @@ const TasksList = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    const reordered = reorder(rows, result.source.index, result.destination.index);
+    setRows(reordered);
+  };
 
   // Delete Logic
   const handleDeleteClick = (task_id) => {
@@ -283,7 +306,125 @@ const TasksList = () => {
           }}
         >
           <ThemeProvider theme={getMuiTheme}>
-            <MUIDataTable title={"Manage Tasks"} data={rows} columns={columns} options={options} />
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="droppable-table">
+                {(provided) => (
+                  <TableContainer
+                    component={Paper}
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Start Date</TableCell>
+                          <TableCell>Category</TableCell>
+                          <TableCell>Title</TableCell>
+                          <TableCell>Description</TableCell>
+                          <TableCell>Location</TableCell>
+                          <TableCell>Assignee</TableCell>
+                          <TableCell>Status</TableCell>
+                          <TableCell>Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {rows.map((row, index) => (
+                          <Draggable
+                            key={row.task_id}
+                            draggableId={row.task_id.toString()}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <TableRow
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  background: snapshot.isDragging ? "#f0f0f0" : "inherit",
+                                }}
+                              >
+                                <TableCell>
+                                  {row.start_date
+                                    ? new Date(row.start_date).toLocaleDateString()
+                                    : "-"}
+                                </TableCell>
+                                <TableCell>{row.category_name}</TableCell>
+                                <TableCell>
+                                  <Tooltip title={row.title} arrow>
+                                    <Typography
+                                      noWrap
+                                      sx={{
+                                        maxWidth: 150,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {row.title}
+                                    </Typography>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell>
+                                  <Tooltip title={row.description}>
+                                    <Typography
+                                      noWrap
+                                      sx={{
+                                        maxWidth: 150,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {row.description}
+                                    </Typography>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell>
+                                  <Tooltip title={row.location} arrow>
+                                    <Typography
+                                      noWrap
+                                      sx={{
+                                        maxWidth: 150,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {row.location}
+                                    </Typography>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell>{row.assignee_name}</TableCell>
+                                <TableCell>{row.status_name}</TableCell>
+                                <TableCell>
+                                  <IconButton
+                                    color="primary"
+                                    onClick={() => navigate(`/tasks/view-task/${row.task_id}`)}
+                                  >
+                                    <Visibility />
+                                  </IconButton>
+                                  <IconButton
+                                    color="primary"
+                                    onClick={() => navigate(`/tasks/edit-task/${row.task_id}`)}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                  <IconButton
+                                    color="error"
+                                    onClick={() => handleDeleteClick(row.task_id)}
+                                  >
+                                    <DeleteIcon />
+                                  </IconButton>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Droppable>
+            </DragDropContext>
           </ThemeProvider>
         </SoftBox>
       </Card>

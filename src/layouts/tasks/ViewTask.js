@@ -17,6 +17,7 @@ import {
   stepConnectorClasses,
   CardContent,
   Card,
+  Tooltip,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
@@ -219,14 +220,26 @@ const ViewTask = () => {
                           xs={12}
                           sm={8}
                           sx={{
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                            overflowY: "auto",
                             pr: 1,
                             width: "100%",
                           }}
                         >
-                          <Typography variant="body1">{item.value}</Typography>
+                          <Box
+                            sx={{
+                              maxHeight: item.label === "Description" ? 120 : 50, // limit height
+                              overflowY: "auto",
+                              overflowX: "hidden",
+                              whiteSpace: "pre-wrap",
+                              wordBreak: "break-word",
+                              pr: 1,
+                            }}
+                          >
+                            <Tooltip title={item.value || ""} arrow>
+                              <Typography variant="body1" noWrap={item.label !== "Description"}>
+                                {item.value || "-"}
+                              </Typography>
+                            </Tooltip>
+                          </Box>
                         </Grid>
                       </React.Fragment>
                     ))}
