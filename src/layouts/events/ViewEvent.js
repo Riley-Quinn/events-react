@@ -22,8 +22,6 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPressReleaseModal from "./AddPressReleaseModal";
 
-const MEDIA_BASE_URL = "https://d108ysp6ovb3mv.cloudfront.net";
-
 const ViewEvent = () => {
   const { id } = useParams();
   const token = localStorage.getItem("token");
@@ -136,7 +134,7 @@ const ViewEvent = () => {
     return t.slice(0, 5); // HH:mm
   };
 
-  const getFileUrl = (url) => `${MEDIA_BASE_URL}/${url}`;
+  const getFileUrl = (url) => `${process.env.REACT_APP_MEDIA_BASE_URL}/${url}`;
 
   if (!event) return <div>Loading...</div>;
   const handleOpenModal = () => {

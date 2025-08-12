@@ -33,8 +33,6 @@ import EmailIcon from "@mui/icons-material/Email";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 
-const MEDIA_BASE_URL = "https://d108ysp6ovb3mv.cloudfront.net";
-
 const ViewPressRelease = () => {
   const { pressId } = useParams();
   const navigate = useNavigate();
@@ -176,7 +174,7 @@ const ViewPressRelease = () => {
     }
   };
 
-  const getFileUrl = (url) => `${MEDIA_BASE_URL}/${url}`;
+  const getFileUrl = (url) => `${process.env.REACT_APP_MEDIA_BASE_URL}/${url}`;
   if (loading) {
     return (
       <DashboardLayout>
