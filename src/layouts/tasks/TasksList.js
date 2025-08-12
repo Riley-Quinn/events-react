@@ -1,6 +1,5 @@
-//TaskList
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MUIDataTable from "mui-datatables";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
@@ -18,6 +17,8 @@ import {
   Switch,
   FormControl,
   FormGroup,
+  Chip,
+  Box,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import SoftBox from "components/SoftBox";
@@ -27,7 +28,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import authAxios from "authAxios";
-import { Visibility } from "@mui/icons-material";
+import { Visibility, Clear } from "@mui/icons-material";
 import { Tooltip, Typography } from "@mui/material";
 import {
   Table,
@@ -69,15 +70,37 @@ const reorder = (list, startIndex, endIndex) => {
 const TasksList = () => {
   const { fetchError, fetchSuccess } = useSnackbar();
   const navigate = useNavigate();
+  const location = useLocation();
   const [rows, setRows] = useState([]);
+  const [filteredRows, setFilteredRows] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [newStatus, setNewStatus] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [isFromDashboard, setIsFromDashboard] = useState(false);
 
   const token = localStorage.getItem("token");
+
+  // Check if coming from dashboard
+  useEffect(() => {
+    const referrer = document.referrer;
+    setIsFromDashboard(referrer.includes("/dashboard"));
+  }, []);
+
+  // Extract status from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const statusParam = urlParams.get("status");
+    if (statusParam) {
+      setStatusFilter(statusParam);
+      setIsFromDashboard(true); // If status filter is set, treat as from dashboard
+    } else {
+      setStatusFilter(null);
+    }
+  }, [location.search]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -89,14 +112,41 @@ const TasksList = () => {
     }
   }, [showAll]);
 
+  // Filter rows based on status filter or today's date
+  useEffect(() => {
+    let filtered = [...rows];
+
+    // Apply status filter if set
+    if (statusFilter) {
+      filtered = filtered.filter((task) => task.status_name === statusFilter);
+    }
+    // If not from dashboard and no status filter, show only today's tasks
+    else if (!isFromDashboard && !showAll) {
+      const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format
+      filtered = filtered.filter((task) => {
+        if (!task.start_date) return false;
+        const taskDate = new Date(task.start_date).toLocaleDateString("en-CA");
+        return taskDate === today;
+      });
+    }
+
+    setFilteredRows(filtered);
+  }, [rows, statusFilter, showAll, isFromDashboard]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const onDragEnd = (result) => {
     if (!result.destination) return;
-    const reordered = reorder(rows, result.source.index, result.destination.index);
-    setRows(reordered);
+    const reordered = reorder(filteredRows, result.source.index, result.destination.index);
+    setFilteredRows(reordered);
+  };
+
+  // Clear status filter
+  const clearStatusFilter = () => {
+    setStatusFilter(null);
+    navigate("/tasks"); // Remove query params from URL
   };
 
   // Delete Logic
@@ -136,6 +186,7 @@ const TasksList = () => {
   const handleSaveStatus = async () => {
     try {
       const statusMap = {
+        Open: 1,
         Pending: 3,
         "In Progress": 2,
         "On Hold": 4,
@@ -239,7 +290,7 @@ const TasksList = () => {
         filter: false,
         sort: false,
         customBodyRenderLite: (dataIndex) => {
-          const task = rows[dataIndex];
+          const task = filteredRows[dataIndex];
           return (
             <>
               <IconButton
@@ -254,9 +305,6 @@ const TasksList = () => {
               >
                 <EditIcon />
               </IconButton>
-              {/* <IconButton color="primary" onClick={() => handleEditClick(task)}>
-                <EditIcon />
-              </IconButton> */}
               <IconButton color="error" onClick={() => handleDeleteClick(task.task_id)}>
                 <DeleteIcon />
               </IconButton>
@@ -271,28 +319,51 @@ const TasksList = () => {
     <DashboardLayout>
       <DashboardNavbar />
       <Card style={{ padding: "24px", margin: "16px auto", maxWidth: "2000px" }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "16px" }}>
-          <FormControl component="fieldset">
-            <FormGroup row>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={showAll}
-                    onChange={(e) => setShowAll(e.target.checked)} // 🔹 toggle ON/OFF
-                    color="primary"
-                  />
-                }
-                label="Show All Tasks"
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+          }}
+        >
+          <Box>
+            {statusFilter && (
+              <Chip
+                label={`Filtered by: ${statusFilter}`}
+                onDelete={clearStatusFilter}
+                deleteIcon={<Clear />}
+                color="primary"
+                variant="outlined"
               />
-            </FormGroup>
-          </FormControl>
-          <SoftButton
-            variant="gradient"
-            className="add-usr-button"
-            onClick={() => navigate(`/tasks/add-task`)}
-          >
-            Add Task
-          </SoftButton>
+            )}
+            {!isFromDashboard && !showAll && !statusFilter && (
+              <Chip label="Showing today's tasks" color="info" variant="outlined" />
+            )}
+          </Box>
+          <div style={{ display: "flex", gap: "16px" }}>
+            <FormControl component="fieldset">
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={showAll}
+                      onChange={(e) => setShowAll(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Show All Tasks"
+                />
+              </FormGroup>
+            </FormControl>
+            <SoftButton
+              variant="gradient"
+              className="add-usr-button"
+              onClick={() => navigate(`/tasks/add-task`)}
+            >
+              Add Task
+            </SoftButton>
+          </div>
         </div>
 
         <SoftBox
@@ -328,7 +399,7 @@ const TasksList = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {rows.map((row, index) => (
+                        {filteredRows.map((row, index) => (
                           <Draggable
                             key={row.task_id}
                             draggableId={row.task_id.toString()}
@@ -466,6 +537,7 @@ const TasksList = () => {
             Select Status
           </FormLabel>
           <RadioGroup value={newStatus} onChange={handleStatusChange}>
+            <FormControlLabel value="Open" control={<Radio />} label="Open" />
             <FormControlLabel value="Pending" control={<Radio />} label="Pending" />
             <FormControlLabel value="In Progress" control={<Radio />} label="In Progress" />
             <FormControlLabel value="On Hold" control={<Radio />} label="On Hold" />
