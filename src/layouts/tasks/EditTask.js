@@ -25,11 +25,21 @@ const validationSchema = Yup.object({
   start_date: Yup.date().nullable(),
 });
 
+// Helper function to format dates correctly for input fields
+const formatDateForInput = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  // Handle timezone offset to ensure we get the correct local date
+  const offset = date.getTimezoneOffset() * 60000;
+  const localDate = new Date(date.getTime() - offset);
+  return localDate.toISOString().split("T")[0];
+};
+
 const EditTask = () => {
   const { fetchSuccess, fetchError } = useSnackbar();
   const { user } = useAuthUser();
   const { usersList } = useFetchUsers();
-  const { task_id } = useParams(); // task ID from URL
+  const { task_id } = useParams();
   const navigate = useNavigate();
 
   const [initialValues, setInitialValues] = useState(null);
@@ -38,16 +48,13 @@ const EditTask = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rolesList, setRolesList] = useState([]);
-
   const [statuses, setStatuses] = useState([]);
 
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
         const res = await authAxios.get("/tasks/status/all", {
-          params: {
-            type: "task",
-          },
+          params: { type: "task" },
         });
         setStatuses(res.data.list || []);
       } catch (err) {
@@ -82,13 +89,13 @@ const EditTask = () => {
           assignee_id: task?.assignee_id,
           role_id: task?.role_id || null,
           status_id: task?.status_id,
-          estimated_date: task?.estimated_date?.split("T")[0] || "",
-          start_date: task?.start_date?.split("T")[0] || "",
+          estimated_date: formatDateForInput(task?.estimated_date),
+          start_date: formatDateForInput(task?.start_date),
         });
 
         setSelectedCategoryId(task.category_id);
       } catch (err) {
-        console.error("Error", err);
+        console.error("Error fetching task details", err);
         fetchError("Failed to fetch task details");
       } finally {
         setLoading(false);
@@ -125,7 +132,16 @@ const EditTask = () => {
     fetchRoles();
   }, [fetchError]);
 
-  if (loading || !initialValues) return null;
+  if (loading || !initialValues) {
+    return (
+      <DashboardLayout>
+        <DashboardNavbar />
+        <Card style={{ padding: "30px", textAlign: "center" }}>
+          <SoftTypography variant="h6">Loading task details...</SoftTypography>
+        </Card>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -293,6 +309,7 @@ const EditTask = () => {
                     </FormControl>
                   </Grid>
                 )}
+
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -306,7 +323,7 @@ const EditTask = () => {
                       }
                       onChange={(e, value) => {
                         setFieldValue("role_id", value ? value.role_id : null);
-                        setFieldValue("assignee_id", null); // reset user if role selected
+                        setFieldValue("assignee_id", null);
                       }}
                       value={
                         rolesList.find((r) => Number(r.role_id) === Number(values.role_id)) || null
@@ -323,6 +340,7 @@ const EditTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -338,7 +356,7 @@ const EditTask = () => {
                       }}
                       value={usersList?.find((user) => user.id === values.assignee_id) || null}
                       renderOption={(props, option) => {
-                        const isSelf = option.id === user?.id; // define this variable
+                        const isSelf = option.id === user?.id;
                         return (
                           <li {...props}>
                             <span style={{ fontWeight: isSelf ? "bold" : "normal" }}>
@@ -358,6 +376,7 @@ const EditTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12}>
                   <SoftTypography
                     variant="caption"
@@ -375,6 +394,7 @@ const EditTask = () => {
                     the Assign To option.
                   </SoftTypography>
                 </Grid>
+
                 <Grid item xs={12} md={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -401,6 +421,7 @@ const EditTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -419,6 +440,7 @@ const EditTask = () => {
                     />
                   </FormControl>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
                     <SoftTypography component="label" variant="caption" fontWeight="bold">
