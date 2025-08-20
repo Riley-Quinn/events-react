@@ -8,6 +8,7 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import authAxios from "authAxios";
 import { Button, Box, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { useAbility } from "contexts/AbilityContext";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -41,6 +42,7 @@ const EventsCalendar = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const ability = useAbility();
 
   useEffect(() => {
     fetchEvents();
@@ -127,13 +129,15 @@ const EventsCalendar = () => {
       <DashboardNavbar />
       <div style={{ padding: 20 }}>
         <Box sx={{ display: "flex", justifyContent: "flex-end", marginBottom: 2 }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate("/events/add-event")}
-            className="add-usr-button"
-          >
-            Add Event
-          </Button>
+          {ability.can("add", "Event") && (
+            <Button
+              variant="contained"
+              onClick={() => navigate("/events/add-event")}
+              className="add-usr-button"
+            >
+              Add Event
+            </Button>
+          )}
         </Box>
 
         <Calendar
@@ -186,20 +190,24 @@ const EventsCalendar = () => {
             >
               Edit
             </Button>
-            <Button
-              onClick={() => setConfirmDelete(true)}
-              variant="contained"
-              className="delete-btn"
-            >
-              Delete
-            </Button>
-            <Button
-              onClick={() => navigate(`/events/view/${selectedEvent.id}`)}
-              variant="contained"
-              color="primary"
-            >
-              View
-            </Button>
+            {ability.can("delete", "Event") && (
+              <Button
+                onClick={() => setConfirmDelete(true)}
+                variant="contained"
+                className="delete-btn"
+              >
+                Delete
+              </Button>
+            )}
+            {ability.can("view", "Event") && (
+              <Button
+                onClick={() => navigate(`/events/view/${selectedEvent.id}`)}
+                variant="contained"
+                color="primary"
+              >
+                View
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
 

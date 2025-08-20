@@ -1,3 +1,4 @@
+import { subject } from "@casl/ability";
 import { useAbility } from "contexts/AbilityContext";
 // Map route keys to CASL subjects and actions
 
@@ -13,6 +14,7 @@ const routePermissionMap = {
   birthdays: { action: "modify", subject: "Permission" },
   "special-days": { action: "modify", subject: "Permission" },
   events: { action: "modify", subject: "Permission" },
+  privatepage: { action: "manage", subject: "User" },
 };
 
 export function filterRoutesByPermission(routes, ability) {

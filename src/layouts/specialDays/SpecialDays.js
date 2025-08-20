@@ -15,6 +15,7 @@ import {
   Button,
   Box,
 } from "@mui/material";
+import { useAbility } from "contexts/AbilityContext";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -38,7 +39,7 @@ const SpecialDays = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const token = localStorage.getItem("token");
-
+  const ability = useAbility();
   useEffect(() => {
     fetchSpecialDays();
   }, []);
@@ -114,9 +115,11 @@ const SpecialDays = () => {
             marginBottom: 2,
           }}
         >
-          <Button variant="contained" onClick={() => setOpenAdd(true)} className="add-usr-button">
-            Add Important Day
-          </Button>
+          {ability.can("add", "ImportantDays") && (
+            <Button variant="contained" onClick={() => setOpenAdd(true)} className="add-usr-button">
+              Add Important Day
+            </Button>
+          )}
         </Box>
 
         <Calendar
@@ -216,14 +219,16 @@ const SpecialDays = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setConfirmDeleteOpen(true)}
-              className="delete-btn"
-            >
-              Delete
-            </Button>
+            {ability.can("delete", "ImportantDays") && (
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setConfirmDeleteOpen(true)}
+                className="delete-btn"
+              >
+                Delete
+              </Button>
+            )}
             <Button variant="contained" onClick={handleUpdateSpecialDay} className="add-usr-button">
               Save
             </Button>

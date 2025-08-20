@@ -15,6 +15,7 @@ import {
   Button,
   Box,
 } from "@mui/material";
+import { useAbility } from "contexts/AbilityContext";
 
 const locales = {
   "en-US": require("date-fns/locale/en-US"),
@@ -38,7 +39,7 @@ const Birthdays = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const token = localStorage.getItem("token");
-
+  const ability = useAbility();
   useEffect(() => {
     fetchBirthdays();
   }, []);
@@ -114,9 +115,11 @@ const Birthdays = () => {
             marginBottom: 2,
           }}
         >
-          <Button variant="contained" onClick={() => setOpenAdd(true)} className="add-usr-button">
-            Add Birthday
-          </Button>
+          {ability.can("add", "Birthday") && (
+            <Button variant="contained" onClick={() => setOpenAdd(true)} className="add-usr-button">
+              Add Birthday
+            </Button>
+          )}
         </Box>
 
         <Calendar
@@ -204,14 +207,16 @@ const Birthdays = () => {
             >
               Cancel
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => setConfirmDeleteOpen(true)}
-              className="delete-btn"
-            >
-              Delete
-            </Button>
+            {ability.can("delete", "Birthday") && (
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setConfirmDeleteOpen(true)}
+                className="delete-btn"
+              >
+                Delete
+              </Button>
+            )}
             <Button variant="contained" onClick={handleUpdateBirthday} className="add-usr-button">
               Save
             </Button>
