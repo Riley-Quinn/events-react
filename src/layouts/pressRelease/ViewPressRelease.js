@@ -230,7 +230,7 @@ const ViewPressRelease = () => {
                 <Grid container spacing={2}>
                   {[
                     { label: "Title", value: pressRelease.title },
-                    { label: "Created By", value: pressRelease.createdby_name },
+                    // { label: "Created By", value: pressRelease.createdby_name },
                     { label: "Assignee", value: pressRelease.assignee_name },
                     { label: "Notes", value: pressRelease.notes },
                     { label: "Status", value: pressRelease.status_name },
@@ -246,7 +246,7 @@ const ViewPressRelease = () => {
                           alignItems: "center",
                         }}
                       >
-                        <Typography variant="subtitle1" fontWeight="bold">
+                        <Typography variant="subtitle1" fontSize={16} fontWeight="bold">
                           {item.label}
                         </Typography>
                       </Grid>
@@ -264,7 +264,9 @@ const ViewPressRelease = () => {
                           pr: 1,
                         }}
                       >
-                        <Typography variant="body1">{item.value}</Typography>
+                        <Typography variant="body1" fontSize={14}>
+                          {item.value}
+                        </Typography>
                       </Grid>
                     </React.Fragment>
                   ))}
