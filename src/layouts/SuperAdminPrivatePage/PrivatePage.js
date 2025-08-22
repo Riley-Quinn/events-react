@@ -3,34 +3,32 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
-  CardContent,
   Grid,
   Box,
-  Typography,
   TextField,
-  Button,
-  Snackbar,
-  Alert,
-  InputAdornment,
   IconButton,
   Dialog,
   DialogTitle,
+  DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
-import { Tooltip } from "@mui/material";
-import {
-  Title as TitleIcon,
-  Description as DescriptionIcon,
-  Save as SaveIcon,
-  Article as ArticleIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
+import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-
+import SoftButton from "components/SoftButton";
+import SoftTypography from "components/SoftTypography";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 import MUIDataTable from "mui-datatables";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import authAxios from "authAxios";
+import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+
+const validationSchema = Yup.object({
+  title: Yup.string().required("Title is required"),
+  description: Yup.string().required("Description is required"),
+});
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -52,103 +50,59 @@ const options = {
 };
 
 const PrivatePage = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+  const { fetchError, fetchSuccess } = useSnackbar();
   const [drafts, setDrafts] = useState([]);
+  const [editingDraft, setEditingDraft] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
 
   // Fetch drafts
   const fetchDrafts = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/drafts");
-      const data = await response.json();
-      if (response.ok) {
-        setDrafts(data);
-      } else {
-        setSnackbar({
-          open: true,
-          message: data.message || "Error fetching drafts",
-          severity: "error",
-        });
-      }
+      const { data } = await authAxios.get("/drafts");
+      setDrafts(data);
     } catch (error) {
-      setSnackbar({ open: true, message: "Server error", severity: "error" });
+      fetchError(error.response?.data?.message || "Error fetching drafts");
     }
-  }, []);
+  }, [fetchError]);
 
   useEffect(() => {
     fetchDrafts();
   }, [fetchDrafts]);
 
-  // Save / Update draft
-  const handleSave = async () => {
-    if (!title || !description) {
-      setSnackbar({ open: true, message: "Title and Description required", severity: "error" });
-      return;
-    }
-
-    setLoading(true);
+  // Save draft (new or edited)
+  const handleSave = async (values, { resetForm, setSubmitting }) => {
     try {
-      const url = editingId
-        ? `http://localhost:4000/api/drafts/${editingId}`
-        : "http://localhost:4000/api/drafts";
-      const method = editingId ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ Title: title, Description: description }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setSnackbar({
-          open: true,
-          message: editingId ? "Draft updated successfully!" : "Draft saved successfully!",
-          severity: "success",
+      if (editingDraft) {
+        await authAxios.put(`/drafts/${editingDraft.id}`, {
+          Title: values.title,
+          Description: values.description,
         });
-        setTitle("");
-        setDescription("");
-        setEditingId(null);
-        fetchDrafts();
+        fetchSuccess("Draft updated successfully!");
       } else {
-        setSnackbar({
-          open: true,
-          message: data.message || "Error saving draft",
-          severity: "error",
+        await authAxios.post("/drafts", {
+          Title: values.title,
+          Description: values.description,
         });
+        fetchSuccess("Draft saved successfully!");
       }
+      resetForm();
+      setEditingDraft(null);
+      fetchDrafts();
     } catch (error) {
-      setSnackbar({ open: true, message: "Server error", severity: "error" });
+      fetchError(error.response?.data?.message || "Error saving draft");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
-  };
-
-  // Edit draft
-  const handleEdit = (draft) => {
-    setTitle(draft.Title);
-    setDescription(draft.Description);
-    setEditingId(draft.id);
   };
 
   // Delete draft
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/drafts/${deleteConfirm.id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        setSnackbar({ open: true, message: "Draft deleted successfully!", severity: "success" });
-        fetchDrafts();
-      } else {
-        setSnackbar({ open: true, message: "Error deleting draft", severity: "error" });
-      }
+      await authAxios.delete(`/drafts/${deleteConfirm.id}`);
+      fetchSuccess("Draft deleted successfully!");
+      fetchDrafts();
     } catch (error) {
-      setSnackbar({ open: true, message: "Server error", severity: "error" });
+      fetchError(error.response?.data?.message || "Error deleting draft");
     } finally {
       setDeleteConfirm({ open: false, id: null });
     }
@@ -221,7 +175,7 @@ const PrivatePage = () => {
           const draft = drafts[dataIndex];
           return (
             <>
-              <IconButton color="primary" onClick={() => handleEdit(draft)}>
+              <IconButton color="primary" onClick={() => setEditingDraft(draft)}>
                 <EditIcon />
               </IconButton>
               <IconButton
@@ -241,76 +195,65 @@ const PrivatePage = () => {
     <DashboardLayout>
       <DashboardNavbar />
       <Box p={3}>
-        {/* Create / Edit Draft Form */}
-        <Card sx={{ mb: 4, borderRadius: 3 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: 500, color: "#e6762d", mb: 3 }}>
-              <ArticleIcon /> {editingId ? "Edit Draft" : "Create New Draft"}
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  label="Draft Title"
-                  variant="standard"
-                  fullWidth
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Title..."
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <TitleIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Draft Content"
-                  variant="standard"
-                  fullWidth
-                  multiline
-                  rows={6}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Description..."
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start" sx={{ mt: 1.5 }}>
-                        <DescriptionIcon color="primary" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  onClick={handleSave}
-                  className="add-usr-button"
-                  disabled={loading}
-                  startIcon={<SaveIcon />}
-                  sx={{ mr: 2 }}
-                >
-                  {loading ? "Saving..." : editingId ? "Update Draft" : "Save Draft"}
-                </Button>
-                {editingId && (
-                  <Button
-                    variant="outlined"
-                    className="cancel-button"
-                    onClick={() => {
-                      setEditingId(null);
-                      setTitle("");
-                      setDescription("");
-                    }}
-                  >
-                    Cancel Edit
-                  </Button>
-                )}
-              </Grid>
-            </Grid>
-          </CardContent>
+        {/* Create Draft Form */}
+        <Card sx={{ p: 4, borderRadius: 3, mb: 4 }}>
+          <SoftTypography variant="h5" sx={{ mb: 3, color: "#e6762d" }}>
+            Create New Draft
+          </SoftTypography>
+
+          <Formik
+            initialValues={{ title: "", description: "" }}
+            validationSchema={validationSchema}
+            onSubmit={handleSave}
+          >
+            {({ values, errors, touched, handleChange, handleSubmit, isSubmitting }) => (
+              <Form onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      <strong>Title</strong>
+                    </SoftTypography>
+                    <TextField
+                      name="title"
+                      value={values.title}
+                      onChange={handleChange}
+                      variant="outlined"
+                      fullWidth
+                      error={!!errors.title && touched.title}
+                      helperText={touched.title && errors.title}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <SoftTypography component="label" variant="caption" fontWeight="bold">
+                      <strong>Description</strong>
+                    </SoftTypography>
+                    <TextField
+                      name="description"
+                      value={values.description}
+                      onChange={handleChange}
+                      variant="outlined"
+                      fullWidth
+                      multiline
+                      rows={6}
+                      error={!!errors.description && touched.description}
+                      helperText={touched.description && errors.description}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <SoftButton
+                      variant="gradient"
+                      type="submit"
+                      className="add-usr-button"
+                      disabled={isSubmitting}
+                      sx={{ mr: 2 }}
+                    >
+                      {isSubmitting ? "Saving..." : "Save Draft"}
+                    </SoftButton>
+                  </Grid>
+                </Grid>
+              </Form>
+            )}
+          </Formik>
         </Card>
 
         {/* Drafts Table */}
@@ -325,31 +268,102 @@ const PrivatePage = () => {
           </ThemeProvider>
         </Card>
 
-        {/* Delete Dialog */}
+        {/* Edit Draft Dialog */}
+        <Dialog open={!!editingDraft} onClose={() => setEditingDraft(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>Edit Draft</DialogTitle>
+          <DialogContent>
+            {editingDraft && (
+              <Formik
+                initialValues={{
+                  title: editingDraft?.Title || "",
+                  description: editingDraft?.Description || "",
+                }}
+                enableReinitialize
+                validationSchema={validationSchema}
+                onSubmit={handleSave}
+              >
+                {({ values, errors, touched, handleChange, handleSubmit, isSubmitting }) => (
+                  <Form onSubmit={handleSubmit}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <SoftTypography component="label" variant="caption" fontWeight="bold">
+                          Title
+                        </SoftTypography>
+                        <TextField
+                          name="title"
+                          value={values.title}
+                          onChange={handleChange}
+                          variant="outlined"
+                          fullWidth
+                          error={!!errors.title && touched.title}
+                          helperText={touched.title && errors.title}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <SoftTypography component="label" variant="caption" fontWeight="bold">
+                          Description
+                        </SoftTypography>
+                        <TextField
+                          name="description"
+                          value={values.description}
+                          onChange={handleChange}
+                          variant="outlined"
+                          fullWidth
+                          multiline
+                          rows={6}
+                          error={!!errors.description && touched.description}
+                          helperText={touched.description && errors.description}
+                        />
+                      </Grid>
+                    </Grid>
+                    <DialogActions sx={{ mt: 2 }}>
+                      <SoftButton
+                        variant="gradient"
+                        onClick={() => setEditingDraft(null)}
+                        className="cancel-button"
+                      >
+                        Cancel
+                      </SoftButton>
+                      <SoftButton
+                        variant="gradient"
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="add-usr-button"
+                      >
+                        {isSubmitting ? "Updating..." : "Update"}
+                      </SoftButton>
+                    </DialogActions>
+                  </Form>
+                )}
+              </Formik>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation */}
         <Dialog
           open={deleteConfirm.open}
           onClose={() => setDeleteConfirm({ open: false, id: null })}
         >
           <DialogTitle>Are you sure you want to delete this draft?</DialogTitle>
           <DialogActions>
-            <Button onClick={() => setDeleteConfirm({ open: false, id: null })} color="inherit">
+            <SoftButton
+              variant="gradient"
+              className="cancel-button"
+              onClick={() => setDeleteConfirm({ open: false, id: null })}
+            >
               Cancel
-            </Button>
-            <Button onClick={handleDelete} color="error" variant="contained">
+            </SoftButton>
+            <SoftButton
+              variant="gradient"
+              className="delete-button"
+              color="error"
+              onClick={handleDelete}
+            >
               Delete
-            </Button>
+            </SoftButton>
           </DialogActions>
         </Dialog>
-
-        {/* Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={4000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-        </Snackbar>
       </Box>
     </DashboardLayout>
   );

@@ -12,42 +12,34 @@ import {
   FormLabel,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
-import axios from "axios";
+import authAxios from "authAxios";
 import PropTypes from "prop-types";
+import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 
 const ChangePasswordModal = ({ open, onClose }) => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+  const { fetchSuccess, fetchError } = useSnackbar();
 
   const handleSubmit = async () => {
     if (newPassword !== confirmPassword) {
-      setSnackbar({ open: true, message: "Passwords do not match", severity: "error" });
+      fetchError("Passwords do not match");
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        "http://localhost:4000/api/auth/change-password",
-        { oldPassword, newPassword },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await authAxios.put("/auth/change-password", { oldPassword, newPassword });
 
-      setSnackbar({ open: true, message: "Password updated successfully!", severity: "success" });
+      fetchSuccess("Password updated successfully!");
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
       onClose();
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err.response?.data?.message || "Failed to update password",
-        severity: "error",
-      });
+      const msg = err.response?.data?.message || "Failed to update password";
+      fetchError(msg);
     }
   };
 
@@ -76,6 +68,7 @@ const ChangePasswordModal = ({ open, onClose }) => {
               variant="standard"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
+              InputProps={{ disableUnderline: true }}
             />
           </Box>
 
@@ -87,6 +80,7 @@ const ChangePasswordModal = ({ open, onClose }) => {
               variant="standard"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              InputProps={{ disableUnderline: true }}
             />
           </Box>
 
@@ -98,6 +92,7 @@ const ChangePasswordModal = ({ open, onClose }) => {
               variant="standard"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{ disableUnderline: true }}
             />
           </Box>
         </DialogContent>
@@ -112,17 +107,6 @@ const ChangePasswordModal = ({ open, onClose }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert severity={snackbar.severity} onClose={handleCloseSnackbar} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 };
