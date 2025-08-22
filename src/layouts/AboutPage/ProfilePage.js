@@ -48,22 +48,47 @@ const ProfilePage = () => {
                     <Typography variant="h4" gutterBottom sx={{ color: "#e6762d" }}>
                       <strong> Dr.KOPPULA RAJASEKHAR REDDY</strong>
                       <FormHelperText
-                        sx={{ color: "#e6762d", display: "flex", justifyContent: "right" }}
+                        sx={{
+                          color: "#e6762d",
+                          display: "flex",
+                          justifyContent: "right",
+                          fontSize: "14px",
+                        }}
                       >
                         <strong>MBBS,MS</strong>
                       </FormHelperText>
                     </Typography>
 
-                    <Typography variant="body2" color="textSecondary" align="left">
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      align="left"
+                      sx={{ fontSize: "14px" }}
+                    >
                       General & Laparoscopic Surgeon
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" align="left">
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      align="left"
+                      sx={{ fontSize: "14px" }}
+                    >
                       Director, Maa Sharada Hospitals
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" align="left">
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      align="left"
+                      sx={{ fontSize: "14px" }}
+                    >
                       Chairman, YAGNA FOUNDATION
                     </Typography>
-                    <Typography variant="body2" color="textSecondary" align="left">
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      align="left"
+                      sx={{ fontSize: "14px" }}
+                    >
                       Email:yourmail@email.com
                     </Typography>
                   </Grid>
@@ -83,7 +108,7 @@ const ProfilePage = () => {
                 <Typography
                   variant="body1"
                   color="textSecondary"
-                  sx={{ textIndent: 0, textAlign: "justify", hyphens: "auto" }}
+                  sx={{ textIndent: 0, textAlign: "justify", hyphens: "auto", fontSize: "14px" }}
                 >
                   ✓ Dharmic Cell In-charge: Since September 2024, serving as the Dharmic Cell
                   In-charge for Vikarabad district.
@@ -91,7 +116,7 @@ const ProfilePage = () => {
                 <Typography
                   variant="body1"
                   color="textSecondary"
-                  sx={{ textIndent: 0, textAlign: "justify", hyphens: "auto" }}
+                  sx={{ textIndent: 0, textAlign: "justify", hyphens: "auto", fontSize: "14px" }}
                 >
                   ✓ Disha Committee Member: Currently serving as a nominated member in the Vikarabad
                   district Disha Committee, under the leadership of Chevella MP Shri Konda
@@ -113,7 +138,12 @@ const ProfilePage = () => {
                 <Typography
                   variant="body1"
                   color="textSecondary"
-                  sx={{ textIndent: "2em", textAlign: "justify", hyphens: "auto" }}
+                  sx={{
+                    textIndent: "2em",
+                    textAlign: "justify",
+                    hyphens: "auto",
+                    fontSize: "14px",
+                  }}
                 >
                   A dedicated medical professional, social reformer, and community leader, he has
                   seamlessly blended healthcare service, education, and spiritual values to uplift
@@ -129,7 +159,12 @@ const ProfilePage = () => {
                 <Typography
                   variant="body1"
                   color="textSecondary"
-                  sx={{ textIndent: "2em", textAlign: "justify", hyphens: "auto" }}
+                  sx={{
+                    textIndent: "2em",
+                    textAlign: "justify",
+                    hyphens: "auto",
+                    fontSize: "14px",
+                  }}
                 >
                   Studied Upanishads, Brahmasutras, Bhagavad Gita, and Sanskrit Grammar at{" "}
                   <strong>Arsha Vijnana Gurukulam, Nagpur</strong> (2017-2020)

@@ -164,8 +164,6 @@ const ViewTask = () => {
                             step.changed_at && step.changed_by ? (
                               <Typography variant="caption">
                                 Created by {step.changed_by}
-                                
-
                                 {new Date(step.changed_at).toLocaleString("en-IN", {
                                   timeZone: "Asia/Kolkata",
                                   day: "2-digit",
@@ -212,7 +210,7 @@ const ViewTask = () => {
                     ].map((item, index) => (
                       <React.Fragment key={index}>
                         <Grid item xs={12} sm={4}>
-                          <Typography variant="subtitle1" fontWeight="bold">
+                          <Typography variant="subtitle1" fontSize={16} fontWeight="bold">
                             {item.label}
                           </Typography>
                         </Grid>
@@ -236,7 +234,11 @@ const ViewTask = () => {
                             }}
                           >
                             <Tooltip title={item.value || ""} arrow>
-                              <Typography variant="body1" noWrap={item.label !== "Description"}>
+                              <Typography
+                                variant="body1"
+                                fontSize={14}
+                                noWrap={item.label !== "Description"}
+                              >
                                 {item.value || "-"}
                               </Typography>
                             </Tooltip>
@@ -269,4 +271,3 @@ const ViewTask = () => {
 };
 
 export default ViewTask;
- 

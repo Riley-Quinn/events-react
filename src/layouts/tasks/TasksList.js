@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import MUIDataTable from "mui-datatables";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
   Card,
@@ -40,6 +39,7 @@ import {
   Paper,
 } from "@mui/material";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useAbility } from "contexts/AbilityContext";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -53,12 +53,6 @@ const getMuiTheme = (theme) =>
       },
     },
   });
-
-const options = {
-  selectableRows: "none",
-  selectableRowsHeader: false,
-  elevation: 0,
-};
 
 const reorder = (list, startIndex, endIndex) => {
   const result = Array.from(list);
@@ -83,20 +77,18 @@ const TasksList = () => {
   const [isFromDashboard, setIsFromDashboard] = useState(false);
 
   const token = localStorage.getItem("token");
-
-  // Check if coming from dashboard
+  const ability = useAbility();
   useEffect(() => {
     const referrer = document.referrer;
     setIsFromDashboard(referrer.includes("/dashboard"));
   }, []);
 
-  // Extract status from URL params
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const statusParam = urlParams.get("status");
     if (statusParam) {
       setStatusFilter(statusParam);
-      setIsFromDashboard(true); // If status filter is set, treat as from dashboard
+      setIsFromDashboard(true);
     } else {
       setStatusFilter(null);
     }
@@ -105,24 +97,19 @@ const TasksList = () => {
   const fetchData = useCallback(async () => {
     try {
       const response = await authAxios.get(`/tasks?all=${showAll}`);
-      console.log("Full response from /tasks:", response);
       setRows(response.data.list);
     } catch (error) {
       console.error("Unable to fetch tasks", error);
     }
   }, [showAll]);
 
-  // Filter rows based on status filter or today's date
   useEffect(() => {
     let filtered = [...rows];
 
-    // Apply status filter if set
     if (statusFilter) {
       filtered = filtered.filter((task) => task.status_name === statusFilter);
-    }
-    // If not from dashboard and no status filter, show only today's tasks
-    else if (!isFromDashboard && !showAll) {
-      const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD format
+    } else if (!isFromDashboard && !showAll) {
+      const today = new Date().toLocaleDateString("en-CA");
       filtered = filtered.filter((task) => {
         if (!task.start_date) return false;
         const taskDate = new Date(task.start_date).toLocaleDateString("en-CA");
@@ -137,19 +124,38 @@ const TasksList = () => {
     fetchData();
   }, [fetchData]);
 
-  const onDragEnd = (result) => {
+  const onDragEnd = async (result) => {
     if (!result.destination) return;
+
+    // Reorder locally first for responsive UI
     const reordered = reorder(filteredRows, result.source.index, result.destination.index);
     setFilteredRows(reordered);
+
+    try {
+      // Calculate new priorities based on position (1-based index)
+      const updatedTasks = reordered.map((task, index) => ({
+        task_id: task.task_id,
+        priority: index + 1,
+      }));
+
+      // Send to backend
+      await authAxios.post("/tasks/update-priority", {
+        tasks: updatedTasks,
+      });
+
+      fetchSuccess("Task order updated successfully");
+    } catch (error) {
+      fetchError("Failed to update task order");
+      // Revert local changes if API fails
+      fetchData();
+    }
   };
 
-  // Clear status filter
   const clearStatusFilter = () => {
     setStatusFilter(null);
-    navigate("/tasks"); // Remove query params from URL
+    navigate("/tasks");
   };
 
-  // Delete Logic
   const handleDeleteClick = (task_id) => {
     setSelectedTaskId(task_id);
     setDeleteDialogOpen(true);
@@ -172,7 +178,6 @@ const TasksList = () => {
     setSelectedTaskId(null);
   };
 
-  // Edit Status Logic
   const handleEditClick = (task) => {
     setSelectedTask(task);
     setNewStatus(task.status_name);
@@ -211,109 +216,6 @@ const TasksList = () => {
     setEditDialogOpen(false);
     setSelectedTask(null);
   };
-
-  const columns = [
-    {
-      name: "start_date",
-      label: "Start Date",
-      options: {
-        customBodyRender: (value) => (value ? new Date(value).toLocaleDateString() : "-"),
-      },
-    },
-    { name: "category_name", label: "Category" },
-    {
-      name: "title",
-      label: "Title",
-      options: {
-        customBodyRender: (value) => (
-          <Tooltip title={value} arrow>
-            <Typography
-              noWrap
-              sx={{
-                maxWidth: 100,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {value}
-            </Typography>
-          </Tooltip>
-        ),
-      },
-    },
-    {
-      name: "description",
-      label: "Description",
-      options: {
-        customBodyRender: (value) => (
-          <Tooltip title={value} arrow>
-            <Typography
-              noWrap
-              sx={{
-                maxWidth: 100,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {value}
-            </Typography>
-          </Tooltip>
-        ),
-      },
-    },
-    {
-      name: "location",
-      label: "Location",
-      options: {
-        customBodyRender: (value) => (
-          <Tooltip title={value} arrow>
-            <Typography
-              noWrap
-              sx={{
-                maxWidth: 100,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {value}
-            </Typography>
-          </Tooltip>
-        ),
-      },
-    },
-    { name: "assignee_name", label: "Assignee" },
-    { name: "status_name", label: "Status" },
-    {
-      name: "Actions",
-      label: "Actions",
-      options: {
-        filter: false,
-        sort: false,
-        customBodyRenderLite: (dataIndex) => {
-          const task = filteredRows[dataIndex];
-          return (
-            <>
-              <IconButton
-                color="primary"
-                onClick={() => navigate(`/tasks/view-task/${task.task_id}`)}
-              >
-                <Visibility />
-              </IconButton>
-              <IconButton
-                color="primary"
-                onClick={() => navigate(`/tasks/edit-task/${task.task_id}`)}
-              >
-                <EditIcon />
-              </IconButton>
-              <IconButton color="error" onClick={() => handleDeleteClick(task.task_id)}>
-                <DeleteIcon />
-              </IconButton>
-            </>
-          );
-        },
-      },
-    },
-  ];
 
   return (
     <DashboardLayout>
@@ -356,13 +258,15 @@ const TasksList = () => {
                 />
               </FormGroup>
             </FormControl>
-            <SoftButton
-              variant="gradient"
-              className="add-usr-button"
-              onClick={() => navigate(`/tasks/add-task`)}
-            >
-              Add Task
-            </SoftButton>
+            {ability.can("add", "Task") && (
+              <SoftButton
+                variant="gradient"
+                className="add-usr-button"
+                onClick={() => navigate(`/tasks/add-task`)}
+              >
+                Add Task
+              </SoftButton>
+            )}
           </div>
         </div>
 
@@ -393,7 +297,7 @@ const TasksList = () => {
                           <TableCell>Title</TableCell>
                           <TableCell>Description</TableCell>
                           <TableCell>Location</TableCell>
-                          <TableCell>Assignee</TableCell>
+                          <TableCell>Assign To</TableCell>
                           <TableCell>Status</TableCell>
                           <TableCell>Actions</TableCell>
                         </TableRow>
@@ -466,24 +370,28 @@ const TasksList = () => {
                                 <TableCell>{row.assignee_name}</TableCell>
                                 <TableCell>{row.status_name}</TableCell>
                                 <TableCell>
-                                  <IconButton
-                                    color="primary"
-                                    onClick={() => navigate(`/tasks/view-task/${row.task_id}`)}
-                                  >
-                                    <Visibility />
-                                  </IconButton>
+                                  {ability.can("view", "Task") && (
+                                    <IconButton
+                                      color="primary"
+                                      onClick={() => navigate(`/tasks/view-task/${row.task_id}`)}
+                                    >
+                                      <Visibility />
+                                    </IconButton>
+                                  )}
                                   <IconButton
                                     color="primary"
                                     onClick={() => navigate(`/tasks/edit-task/${row.task_id}`)}
                                   >
                                     <EditIcon />
                                   </IconButton>
-                                  <IconButton
-                                    color="error"
-                                    onClick={() => handleDeleteClick(row.task_id)}
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
+                                  {ability.can("delete", "Task") && (
+                                    <IconButton
+                                      color="error"
+                                      onClick={() => handleDeleteClick(row.task_id)}
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             )}
@@ -500,7 +408,6 @@ const TasksList = () => {
         </SoftBox>
       </Card>
 
-      {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
         <DialogTitle>Delete Task</DialogTitle>
         <DialogContent>
@@ -518,7 +425,6 @@ const TasksList = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Status Dialog */}
       <Dialog
         open={editDialogOpen}
         onClose={handleCancelEdit}

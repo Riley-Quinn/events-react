@@ -45,6 +45,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const ability = useAbility();
   const [userCount, setUserCount] = useState(0);
+  const [activeUsersCount, setActiveUsersCount] = useState(0);
   const [tasks, setTasks] = useState([]);
   const [events, setEvents] = useState([]);
   const [birthdaytoday, setBirthdayToday] = useState([]);
@@ -72,9 +73,24 @@ function Dashboard() {
     const fetchUsers = async () => {
       try {
         const res = await authAxios.get("/auth/users");
-        setUserCount(Array.isArray(res.data) ? res.data.length : 0);
+
+        if (Array.isArray(res.data)) {
+          const users = res.data;
+
+          // Total users count
+          setUserCount(users.length);
+
+          // Active users count (is_active === 1)
+          const activeUsers = users.filter((user) => user.is_active === 1);
+          setActiveUsersCount(activeUsers.length);
+        } else {
+          setUserCount(0);
+          setActiveUsersCount(0);
+        }
       } catch (err) {
         console.error("Failed to fetch users count", err);
+        setUserCount(0);
+        setActiveUsersCount(0);
       }
     };
 
@@ -136,7 +152,6 @@ function Dashboard() {
             Published: 0,
           }
         );
-        console.log("🔢 Computed pressStatusCounts:", counts);
         setPressStatusCounts(counts);
       } catch (err) {
         console.error("Failed to fetch press releases count", err);
@@ -256,7 +271,7 @@ function Dashboard() {
                                 </Typography>
                               </>
                             ) : (
-                              <Typography variant="h6">No birthdays today 🎉</Typography>
+                              <Typography variant="h4">No birthdays today 🎉</Typography>
                             )}
                           </Box>
                         </Box>
@@ -305,6 +320,13 @@ function Dashboard() {
                                 sx={{ fontWeight: "bold", fontSize: 44, color: "#000" }}
                               >
                                 {userCount}
+                              </Typography>
+                              <Typography
+                                variant="subtitle1"
+                                sx={{ color: "green", fontSize: "18px", fontWeight: "bold" }}
+                              >
+                                <strong>Active Users:</strong>
+                                {activeUsersCount}
                               </Typography>
                             </Box>
                           </Box>
@@ -379,9 +401,9 @@ function Dashboard() {
                                 >
                                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <Icon sx={{ color }}>{icon}</Icon>
-                                    <Typography>{status}</Typography>
+                                    <Typography fontSize={14}>{status}</Typography>
                                   </Box>
-                                  <Typography fontWeight="bold">
+                                  <Typography fontWeight="bold" fontSize="14px">
                                     {statusCounts[status] ?? 0}
                                   </Typography>
                                 </Box>
@@ -462,9 +484,9 @@ function Dashboard() {
                               >
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                   <Icon sx={{ color }}>{icon}</Icon>
-                                  <Typography>{status}</Typography>
+                                  <Typography fontSize={14}>{status}</Typography>
                                 </Box>
-                                <Typography fontWeight="bold">
+                                <Typography fontWeight="bold" fontSize="14px">
                                   {pressStatusCounts[status] ?? 0}
                                 </Typography>
                               </Box>
@@ -529,12 +551,22 @@ function Dashboard() {
                                     backgroundColor: "grey.50",
                                     "&:hover": { backgroundColor: "grey.100", cursor: "pointer" },
                                   }}
-                                  onClick={() => navigate(`/tasks/${task.id}`)}
+                                  onClick={() => navigate("/tasks")}
                                 >
-                                  <Typography variant="body2" fontWeight="bold" noWrap>
+                                  <Typography
+                                    variant="body2"
+                                    fontWeight="bold"
+                                    fontSize="14px"
+                                    noWrap
+                                  >
                                     {task.title}
                                   </Typography>
-                                  <Typography variant="body2" color="text.secondary" noWrap>
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    fontSize="14px"
+                                    noWrap
+                                  >
                                     Location: {task.location}
                                   </Typography>
                                 </Box>
@@ -545,7 +577,7 @@ function Dashboard() {
                               (t) =>
                                 new Date(t.start_date).toDateString() === new Date().toDateString()
                             ).length === 0 && (
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" fontSize="14px">
                                 No tasks scheduled for today.
                               </Typography>
                             )}
@@ -622,10 +654,20 @@ function Dashboard() {
                                     }}
                                     onClick={() => navigate(`/events/view/${event.id}`)}
                                   >
-                                    <Typography variant="body2" fontWeight="bold" noWrap>
+                                    <Typography
+                                      variant="body2"
+                                      fontWeight="bold"
+                                      fontSize="14px"
+                                      noWrap
+                                    >
                                       {time} – {event.title}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" noWrap>
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                      fontSize="14px"
+                                      noWrap
+                                    >
                                       Location: {event.location || "Not specified"}
                                     </Typography>
                                   </Box>
@@ -638,7 +680,7 @@ function Dashboard() {
                               const eventDay = new Date(event.date).toLocaleDateString("en-CA");
                               return eventDay === today;
                             }).length === 0 && (
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" fontSize="14px">
                                 No events scheduled for today.
                               </Typography>
                             )}
@@ -667,11 +709,17 @@ function Dashboard() {
                           margin: "0 auto", // centers horizontally
                         }}
                       />
-                      <Typography variant="body1" sx={{ fontStyle: "italic", mb: 1 }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontStyle: "italic", mb: 1, fontSize: "14px" }}
+                      >
                         “The Man who works for others, without any selfish motive, really does good
                         to himself.”
                       </Typography>
-                      <Typography variant="subtitle2" sx={{ color: "warning.main" }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ color: "warning.main", fontSize: "14px" }}
+                      >
                         — Sri Ramakrishna
                       </Typography>
                     </Card>
@@ -707,32 +755,57 @@ function Dashboard() {
                             <Typography variant="h4" gutterBottom sx={{ color: "#e6762d" }}>
                               <strong> Dr.KOPPULA RAJASEKHAR REDDY</strong>
                               <FormHelperText
-                                sx={{ color: "#e6762d", display: "flex", justifyContent: "right" }}
+                                sx={{
+                                  color: "#e6762d",
+                                  display: "flex",
+                                  justifyContent: "right",
+                                  fontSize: "14px",
+                                }}
                               >
                                 <strong>MBBS,MS</strong>
                               </FormHelperText>
                             </Typography>
 
-                            <Typography variant="body2" color="textSecondary" align="left">
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              align="left"
+                              fontSize="14px"
+                            >
                               General & Laparoscopic Surgeon
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" align="left">
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              align="left"
+                              fontSize="14px"
+                            >
                               Director, Maa Sharada Hospitals
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" align="left">
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              align="left"
+                              fontSize="14px"
+                            >
                               Chairman, YAGNA FOUNDATION
                             </Typography>
-                            <Typography variant="body2" color="textSecondary" align="left">
+                            <Typography
+                              variant="body2"
+                              color="textSecondary"
+                              align="left"
+                              fontSize="14px"
+                            >
                               Email:yourmail@email.com
                             </Typography>
                             <Box sx={{ mt: 2, textAlign: "left" }}>
-                              <Typography variant="body2">
+                              <Typography variant="body2" fontSize="14px">
                                 <strong>Father’s Name:</strong> Koppula Venkataramireddy
                               </Typography>
-                              <Typography variant="body2">
+                              <Typography variant="body2" fontSize="14px">
                                 <strong>Mother’s Name:</strong> Koppula Govindamma
                               </Typography>
-                              <Typography variant="body2">
+                              <Typography variant="body2" fontSize="14px">
                                 <strong>Address:</strong> Sai Nagar Colony, Vikarabad Town,
                                 Telangana
                               </Typography>

@@ -22,6 +22,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import SoftButton from "components/SoftButton";
 import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import authAxios from "authAxios";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -58,12 +59,8 @@ const ManagePermissions = () => {
   const fetchData = React.useCallback(async () => {
     try {
       const [rolesRes, permsRes] = await Promise.all([
-        axios.get("http://localhost:4000/api/roles", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:4000/api/permissions", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        authAxios.get("/roles"),
+        authAxios.get("/permissions"),
       ]);
 
       setRows(rolesRes.data.filter((role) => role.id !== 1));
@@ -83,9 +80,7 @@ const ManagePermissions = () => {
     setEditedName(role.name);
 
     try {
-      const res = await axios.get(`http://localhost:4000/api/permissions/${role.id}/permissions`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authAxios.get(`/permissions/${role.id}/permissions`);
       const ids = res.data.map((p) => p.id);
       setRolePermissions(ids);
       setOpenEdit(true);
@@ -109,18 +104,12 @@ const ManagePermissions = () => {
   const handleSave = async () => {
     try {
       // Update role name
-      await axios.put(
-        `http://localhost:4000/api/roles/${editingRole.id}`,
-        { name: editedName },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await authAxios.put(`/roles/${editingRole.id}`, { name: editedName });
 
       // Update permissions
-      const res = await axios.put(
-        `http://localhost:4000/api/permissions/${editingRole.id}/permissions`,
-        { permissionIds: rolePermissions },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await authAxios.put(`/permissions/${editingRole.id}/permissions`, {
+        permissionIds: rolePermissions,
+      });
 
       // Update local roles state
       setRows((prev) =>

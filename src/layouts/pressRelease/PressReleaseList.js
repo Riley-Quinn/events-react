@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import MUIDataTable from "mui-datatables";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
   Card,
@@ -16,6 +15,18 @@ import {
   FormLabel,
   Chip,
   Box,
+  Switch,
+  FormControl,
+  FormGroup,
+  Tooltip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  Typography,
+  TableRow,
+  Paper,
 } from "@mui/material";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import SoftBox from "components/SoftBox";
@@ -26,6 +37,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
 import { Visibility, Clear } from "@mui/icons-material";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { useAbility } from "contexts/AbilityContext";
 
 const getMuiTheme = (theme) =>
   createTheme({
@@ -40,10 +53,11 @@ const getMuiTheme = (theme) =>
     },
   });
 
-const options = {
-  selectableRows: "none",
-  selectableRowsHeader: false,
-  elevation: 0,
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
 };
 
 const PressReleaseList = () => {
@@ -57,16 +71,21 @@ const PressReleaseList = () => {
   const [selectedPressId, setSelectedPressId] = useState(null);
   const [selectedPress, setSelectedPress] = useState(null);
   const [newStatus, setNewStatus] = useState("");
+  const [showAll, setShowAll] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [isFromDashboard, setIsFromDashboard] = useState(false);
+  const ability = useAbility();
+  useEffect(() => {
+    const referrer = document.referrer;
+    setIsFromDashboard(referrer.includes("/dashboard"));
+  }, []);
 
-  const token = localStorage.getItem("token");
-
-  // Extract status from URL params
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const statusParam = urlParams.get("status");
     if (statusParam) {
       setStatusFilter(statusParam);
+      setIsFromDashboard(true);
     } else {
       setStatusFilter(null);
     }
@@ -75,33 +94,64 @@ const PressReleaseList = () => {
   const fetchData = useCallback(async () => {
     try {
       const response = await authAxios.get("/press-release/");
-      setRows(response.data);
+      // Sort by priority if available, otherwise by created_at
+      const sortedData = response.data.list.sort((a, b) => {
+        if (a.priority !== undefined && b.priority !== undefined) {
+          return a.priority - b.priority;
+        }
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+      setRows(sortedData);
     } catch (error) {
       console.error("Unable to fetch press releases", error);
+      fetchError("Failed to load press releases");
     }
-  }, [token]);
+  }, [fetchError]);
 
-  // Filter rows based on status filter
   useEffect(() => {
+    let filtered = [...rows];
+
     if (statusFilter) {
-      const filtered = rows.filter((press) => press.status_name === statusFilter);
-      setFilteredRows(filtered);
-    } else {
-      setFilteredRows(rows);
+      filtered = filtered.filter((press) => press.status_name === statusFilter);
+    } else if (!isFromDashboard && !showAll) {
+      filtered = filtered.filter((press) => press.status_name === "Draft");
     }
-  }, [rows, statusFilter]);
+
+    setFilteredRows(filtered);
+  }, [rows, statusFilter, showAll, isFromDashboard]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Clear status filter
-  const clearStatusFilter = () => {
-    setStatusFilter(null);
-    navigate("/press-release"); // Remove query params from URL
+  const onDragEnd = async (result) => {
+    if (!result.destination) return;
+
+    const reordered = reorder(filteredRows, result.source.index, result.destination.index);
+    setFilteredRows(reordered);
+
+    try {
+      const updatedPressReleases = reordered.map((press, index) => ({
+        press_id: press.press_id,
+        priority: index + 1,
+      }));
+
+      await authAxios.post("/press-release/update-priority", {
+        press: updatedPressReleases,
+      });
+
+      fetchSuccess("Press release order updated successfully");
+    } catch (error) {
+      fetchError("Failed to update press release order");
+      fetchData();
+    }
   };
 
-  // Delete Logic
+  const clearStatusFilter = () => {
+    setStatusFilter(null);
+    navigate("/press-release");
+  };
+
   const handleDeleteClick = (press_id) => {
     setSelectedPressId(press_id);
     setDeleteDialogOpen(true);
@@ -124,7 +174,6 @@ const PressReleaseList = () => {
     setSelectedPressId(null);
   };
 
-  // Edit Status Logic
   const handleEditClick = (press) => {
     setSelectedPress(press);
     setNewStatus(press.status_name);
@@ -164,41 +213,6 @@ const PressReleaseList = () => {
     setSelectedPress(null);
   };
 
-  const columns = [
-    { name: "title", label: "Title" },
-    { name: "notes", label: "Notes" },
-    { name: "assignee_name", label: "Assignee" },
-    { name: "status_name", label: "Status" },
-    {
-      name: "Actions",
-      label: "Actions",
-      options: {
-        filter: false,
-        sort: false,
-        customBodyRenderLite: (dataIndex) => {
-          const press = filteredRows[dataIndex];
-          return (
-            <>
-              <IconButton color="primary" onClick={() => navigate(`/edit-press/${press.press_id}`)}>
-                <EditIcon />
-              </IconButton>
-
-              <IconButton
-                color="primary"
-                onClick={() => navigate(`/press-release/view-press/${press.press_id}`)}
-              >
-                <Visibility />
-              </IconButton>
-              <IconButton color="error" onClick={() => handleDeleteClick(press.press_id)}>
-                <DeleteIcon />
-              </IconButton>
-            </>
-          );
-        },
-      },
-    },
-  ];
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -221,15 +235,34 @@ const PressReleaseList = () => {
                 variant="outlined"
               />
             )}
+            {!isFromDashboard && !showAll && !statusFilter && (
+              <Chip label="Showing Drafts Only" color="info" variant="outlined" />
+            )}
           </Box>
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "16px" }}>
-            <SoftButton
-              variant="gradient"
-              className="add-usr-button"
-              onClick={() => navigate(`/press-release/add-press`)}
-            >
-              Add Press Release Note
-            </SoftButton>
+          <div style={{ display: "flex", gap: "16px" }}>
+            <FormControl component="fieldset">
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={showAll}
+                      onChange={(e) => setShowAll(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Show All Press Releases"
+                />
+              </FormGroup>
+            </FormControl>
+            {ability.can("add", "PressRelease") && (
+              <SoftButton
+                variant="gradient"
+                className="add-usr-button"
+                onClick={() => navigate(`/press-release/add-press`)}
+              >
+                Add Press Release
+              </SoftButton>
+            )}
           </div>
         </div>
 
@@ -244,12 +277,116 @@ const PressReleaseList = () => {
           }}
         >
           <ThemeProvider theme={getMuiTheme}>
-            <MUIDataTable
-              title={"Manage Press Release"}
-              data={filteredRows}
-              columns={columns}
-              options={options}
-            />
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="droppable-table">
+                {(provided) => (
+                  <TableContainer
+                    component={Paper}
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                  >
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Title</TableCell>
+                          <TableCell>Notes</TableCell>
+                          <TableCell>Assignee</TableCell>
+                          <TableCell>Status</TableCell>
+                          <TableCell>Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {filteredRows.map((row, index) => (
+                          <Draggable
+                            key={row.press_id}
+                            draggableId={row.press_id.toString()}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <TableRow
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  background: snapshot.isDragging ? "#f0f0f0" : "inherit",
+                                  cursor: "grab",
+                                }}
+                                hover
+                              >
+                                <TableCell>
+                                  <Tooltip title={row.title} arrow>
+                                    <Typography
+                                      noWrap
+                                      sx={{
+                                        maxWidth: 150,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {row.title}
+                                    </Typography>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell>
+                                  <Tooltip title={row.notes}>
+                                    <Typography
+                                      noWrap
+                                      sx={{
+                                        maxWidth: 150,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                      }}
+                                    >
+                                      {row.notes}
+                                    </Typography>
+                                  </Tooltip>
+                                </TableCell>
+                                <TableCell>{row.assignee_name}</TableCell>
+                                <TableCell>{row.status_name}</TableCell>
+                                <TableCell>
+                                  <IconButton
+                                    color="primary"
+                                    onClick={() => navigate(`/edit-press/${row.press_id}`)}
+                                  >
+                                    <EditIcon />
+                                  </IconButton>
+                                  {ability.can("view", "PressRelease") && (
+                                    <IconButton
+                                      color="primary"
+                                      onClick={() =>
+                                        navigate(`/press-release/view-press/${row.press_id}`)
+                                      }
+                                    >
+                                      <Visibility />
+                                    </IconButton>
+                                  )}
+                                  {ability.can("delete", "PressRelease") && (
+                                    <IconButton
+                                      color="error"
+                                      onClick={() => handleDeleteClick(row.press_id)}
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
+                                  )}
+                                  {/* <IconButton
+                                    color="secondary"
+                                    onClick={() => handleEditClick(row)}
+                                  >
+                                    <EditIcon />
+                                  </IconButton> */}
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Droppable>
+            </DragDropContext>
           </ThemeProvider>
         </SoftBox>
       </Card>
@@ -268,51 +405,6 @@ const PressReleaseList = () => {
           </SoftButton>
           <SoftButton onClick={handleConfirmDelete} variant="gradient" className="add-usr-button">
             Delete
-          </SoftButton>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Status Dialog */}
-      <Dialog
-        open={editDialogOpen}
-        onClose={handleCancelEdit}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          sx: {
-            borderRadius: "16px",
-            padding: "24px",
-          },
-        }}
-      >
-        <DialogTitle>Edit Press Release Status</DialogTitle>
-        <DialogContent>
-          <FormLabel component="legend" sx={{ mb: 2, fontWeight: "bold" }}>
-            Select Status
-          </FormLabel>
-          <RadioGroup value={newStatus} onChange={handleStatusChange}>
-            <FormControlLabel value="Draft" control={<Radio />} label="Draft" />
-            <FormControlLabel value="Open for Review" control={<Radio />} label="Open for Review" />
-            <FormControlLabel
-              value="Ready to Publish"
-              control={<Radio />}
-              label="Ready to Publish"
-            />
-            <FormControlLabel
-              value="Feedback Pending"
-              control={<Radio />}
-              label="Feedback Pending"
-            />
-            <FormControlLabel value="Unpublish" control={<Radio />} label="Unpublish" />
-            <FormControlLabel value="Published" control={<Radio />} label="Published" />
-          </RadioGroup>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
-          <SoftButton onClick={handleCancelEdit} variant="gradient" className="cancel-button">
-            Cancel
-          </SoftButton>
-          <SoftButton variant="gradient" className="add-usr-button" onClick={handleSaveStatus}>
-            Save
           </SoftButton>
         </DialogActions>
       </Dialog>

@@ -59,6 +59,8 @@ import {
 import team2 from "assets/images/team-2.jpg";
 import logoSpotify from "assets/images/small-logos/logo-spotify.svg";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 function DashboardNavbar({ absolute, light, isMini }) {
   const { fetchError, fetchSuccess } = useSnackbar();
@@ -66,6 +68,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const [controller, dispatch] = useSoftUIController();
   const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator } = controller;
   const [openMenu, setOpenMenu] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const location = useLocation();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const pathSegments = location.pathname.split("/").slice(1);
@@ -181,9 +184,16 @@ function DashboardNavbar({ absolute, light, isMini }) {
         {isMini ? null : (
           <SoftBox sx={(theme) => navbarRow(theme, { isMini })}>
             <SoftBox display="flex" justifyContent="center" mb={3}>
-              <SoftBox component="img" src={logo} alt="Logo" width="100px" height="100px" />
+              <SoftBox component="img" src={logo} alt="Logo" width="100px" height="100px" />{" "}
             </SoftBox>
             {/* Logout Button */}
+            <>
+              <IconButton onClick={() => setOpenModal(true)} color="inherit">
+                <SettingsIcon />
+              </IconButton>
+
+              <ChangePasswordModal open={openModal} onClose={() => setOpenModal(false)} />
+            </>
             <IconButton sx={navbarIconButton} size="small" onClick={handleLogout}>
               <Icon
                 sx={({ palette: { dark, white } }) => ({

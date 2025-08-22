@@ -41,6 +41,7 @@ import NewspaperIcon from "@mui/icons-material/Newspaper";
 import CakeIcon from "@mui/icons-material/Cake";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ProfilePage from "layouts/AboutPage/ProfilePage";
+import PrivatePage from "layouts/SuperAdminPrivatePage/PrivatePage";
 
 const routes = [
   {
@@ -121,6 +122,15 @@ const routes = [
   },
   {
     type: "collapse",
+    name: "Private Page",
+    key: "privatepage",
+    icon: <Office size="12px" />,
+    route: "/privatepage",
+    component: <PrivatePage />,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
     name: "About",
     key: "about",
     icon: <Office size="12px" />,
@@ -174,15 +184,15 @@ const routes = [
     component: <CategoriesList />,
     noCollapse: true,
   },
-  {
-    type: "collapse",
-    name: "SubCategories",
-    key: "sub-categories",
-    route: "/sub-categories",
-    icon: <BubbleChartIcon size="12px" />,
-    component: <SubCategoriesList />,
-    noCollapse: true,
-  },
+  // {
+  //   type: "collapse",
+  //   name: "SubCategories",
+  //   key: "sub-categories",
+  //   route: "/sub-categories",
+  //   icon: <BubbleChartIcon size="12px" />,
+  //   component: <SubCategoriesList />,
+  //   noCollapse: true,
+  // },
   {
     type: "collapse",
     name: "Tasks",
