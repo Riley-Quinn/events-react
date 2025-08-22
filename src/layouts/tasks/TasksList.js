@@ -129,7 +129,6 @@ const TasksList = () => {
 
     // Reorder locally first for responsive UI
     const reordered = reorder(filteredRows, result.source.index, result.destination.index);
-    console.log("ttttt:", reordered);
     setFilteredRows(reordered);
 
     try {

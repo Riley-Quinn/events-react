@@ -6,6 +6,7 @@ import SoftTypography from "components/SoftTypography";
 import SoftButton from "components/SoftButton"; // Use your project button component
 import axios from "axios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import authAxios from "authAxios";
 
 const NoWebAccess = () => {
   const { fetchSuccess, fetchError } = useSnackbar();
@@ -14,13 +15,7 @@ const NoWebAccess = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.post(
-        "http://localhost:4000/api/auth/logout",
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await authAxios.post("/auth/logout");
 
       localStorage.removeItem("token");
       localStorage.removeItem("permissions");

@@ -152,7 +152,6 @@ function Dashboard() {
             Published: 0,
           }
         );
-        console.log("🔢 Computed pressStatusCounts:", counts);
         setPressStatusCounts(counts);
       } catch (err) {
         console.error("Failed to fetch press releases count", err);

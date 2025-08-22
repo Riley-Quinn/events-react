@@ -142,7 +142,6 @@ const SubCategoriesList = () => {
       },
     },
   ];
-  console.log("Subcategories:", subCategories);
   return (
     <DashboardLayout>
       <DashboardNavbar />

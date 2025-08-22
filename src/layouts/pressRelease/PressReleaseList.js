@@ -95,7 +95,7 @@ const PressReleaseList = () => {
     try {
       const response = await authAxios.get("/press-release/");
       // Sort by priority if available, otherwise by created_at
-      const sortedData = response.data.sort((a, b) => {
+      const sortedData = response.data.list.sort((a, b) => {
         if (a.priority !== undefined && b.priority !== undefined) {
           return a.priority - b.priority;
         }
@@ -128,7 +128,6 @@ const PressReleaseList = () => {
     if (!result.destination) return;
 
     const reordered = reorder(filteredRows, result.source.index, result.destination.index);
-    console.log("rereere:", reordered);
     setFilteredRows(reordered);
 
     try {
@@ -409,40 +408,6 @@ const PressReleaseList = () => {
           </SoftButton>
         </DialogActions>
       </Dialog>
-
-      {/* Edit Status Dialog
-      <Dialog open={editDialogOpen} onClose={handleCancelEdit} fullWidth maxWidth="sm">
-        <DialogTitle>Update Press Release Status</DialogTitle>
-        <DialogContent>
-          <FormLabel component="legend" sx={{ mb: 2, fontWeight: "bold" }}>
-            Select New Status
-          </FormLabel>
-          <RadioGroup value={newStatus} onChange={handleStatusChange}>
-            <FormControlLabel value="Draft" control={<Radio />} label="Draft" />
-            <FormControlLabel value="Open for Review" control={<Radio />} label="Open for Review" />
-            <FormControlLabel
-              value="Ready to Publish"
-              control={<Radio />}
-              label="Ready to Publish"
-            />
-            <FormControlLabel
-              value="Feedback Pending"
-              control={<Radio />}
-              label="Feedback Pending"
-            />
-            <FormControlLabel value="Unpublish" control={<Radio />} label="Unpublish" />
-            <FormControlLabel value="Published" control={<Radio />} label="Published" />
-          </RadioGroup>
-        </DialogContent>
-        <DialogActions>
-          <SoftButton onClick={handleCancelEdit} variant="text" color="secondary">
-            Cancel
-          </SoftButton>
-          <SoftButton onClick={handleSaveStatus} variant="gradient" color="dark">
-            Save Changes
-          </SoftButton>
-        </DialogActions>
-      </Dialog> */}
     </DashboardLayout>
   );
 };

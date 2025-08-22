@@ -120,7 +120,6 @@ const CommentBox = ({ module, moduleId }) => {
       console.error("Error posting comment", err);
     }
   };
-  console.log("comments", comments);
   return (
     <CommentContainer>
       <Typography variant="h6" gutterBottom>
