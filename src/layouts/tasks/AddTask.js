@@ -37,8 +37,6 @@ const validationSchema = Yup.object({
   category_id: Yup.number().typeError("Category must be selected").required("Category is required"),
   sub_category_id: Yup.number().nullable(),
   status_id: Yup.number().typeError("Status is required").required("Status is required"),
-  estimated_date: Yup.date().nullable(),
-  start_date: Yup.date().nullable(),
   start_date: Yup.date()
     .nullable()
     .required("Start Date is Required")
