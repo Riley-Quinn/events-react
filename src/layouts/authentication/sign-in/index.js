@@ -52,7 +52,7 @@ function SignIn() {
       localStorage.setItem("permissions", JSON.stringify(permissions));
       ability.update(defineAbilityFor(permissions));
       window.location.reload();
-      navigate("/dashboard", { replace: true });
+      navigate("/about", { replace: true });
       fetchSuccess(res?.data?.message);
     } catch (err) {
       console.error("Error", err);
@@ -65,7 +65,15 @@ function SignIn() {
       description="Enter your email and password to sign in"
       image={bgggbggggg1}
     >
-      <SoftBox component="form" role="form" className="loginPage">
+      <SoftBox
+        component="form"
+        role="form"
+        className="loginPage"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleLogin();
+        }}
+      >
         <SoftBox mb={2}>
           <SoftBox mb={1} ml={0.5}>
             <SoftTypography component="label" variant="caption" fontWeight="bold">
@@ -94,7 +102,13 @@ function SignIn() {
         </SoftBox>
 
         <SoftBox mt={4} mb={1}>
-          <SoftButton variant="gradient" fullWidth onClick={handleLogin} className="add-usr-button">
+          <SoftButton
+            variant="gradient"
+            type="submit"
+            fullWidth
+            onClick={handleLogin}
+            className="add-usr-button"
+          >
             sign in
           </SoftButton>
         </SoftBox>

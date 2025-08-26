@@ -97,7 +97,7 @@ function Dashboard() {
     // Fetch tasks count by status
     const fetchTasks = async () => {
       try {
-        const res = await authAxios.get("/tasks");
+        const res = await authAxios.get("/tasks?all=true");
         const tasks = Array.isArray(res.data.list) ? res.data.list : [];
         setTasks(tasks);
 
@@ -136,7 +136,7 @@ function Dashboard() {
     const fetchPressReleases = async () => {
       try {
         const res = await authAxios.get("/press-release");
-        const pressReleases = Array.isArray(res.data) ? res.data : [];
+        const pressReleases = Array.isArray(res.data.list) ? res.data.list : [];
         const counts = pressReleases.reduce(
           (acc, pr) => {
             const s = pr.status_name ?? pr.status;
@@ -349,7 +349,7 @@ function Dashboard() {
                           <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
                             <strong>Task Status</strong>
                           </Typography>
-                          <ArrowOutwardIcon />
+                          <ArrowOutwardIcon onClick={() => navigate("/tasks")} />
                         </Box>
                         <Card sx={{ p: 3, borderRadius: 3, boxShadow: 2 }}>
                           {["Open", "Pending", "In Progress", "On Hold", "Done", "Closed"].map(
@@ -426,7 +426,7 @@ function Dashboard() {
                           <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
                             <strong>Press Release Status</strong>
                           </Typography>
-                          <ArrowOutwardIcon />
+                          <ArrowOutwardIcon onClick={() => navigate("/press-release")} />
                         </Box>
                         <Card sx={{ p: 3, borderRadius: 3, boxShadow: 2 }}>
                           {[

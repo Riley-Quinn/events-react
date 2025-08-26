@@ -34,8 +34,14 @@ const AddRole = ({ onClose }) => {
         }
       }}
     >
-      {({ errors, touched, handleChange, values }) => (
-        <Form style={{ marginTop: "16px" }}>
+      {({ errors, touched, handleChange, values, handleSubmit }) => (
+        <Form
+          style={{ marginTop: "16px" }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <FormControl fullWidth>

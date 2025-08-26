@@ -24,6 +24,7 @@ import MUIDataTable from "mui-datatables";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import authAxios from "authAxios";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import { useAuthUser } from "contexts/userContext";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
@@ -47,6 +48,10 @@ const getMuiTheme = (theme) =>
 const options = {
   selectableRows: "none",
   elevation: 0,
+  downloadOptions: {
+    filename: "privatePage.csv",
+    separator: ",",
+  },
 };
 
 const PrivatePage = () => {
@@ -54,20 +59,25 @@ const PrivatePage = () => {
   const [drafts, setDrafts] = useState([]);
   const [editingDraft, setEditingDraft] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
+  const { user } = useAuthUser();
 
   // Fetch drafts
-  const fetchDrafts = useCallback(async () => {
+  const fetchDrafts = async () => {
     try {
-      const { data } = await authAxios.get("/drafts");
-      setDrafts(data);
+      const response = await authAxios.get(`/drafts/${user.id}`);
+      const { data } = response;
+      console.log("datatat:", data);
+      setDrafts(data?.list || []);
     } catch (error) {
       fetchError(error.response?.data?.message || "Error fetching drafts");
     }
-  }, [fetchError]);
+  };
 
   useEffect(() => {
-    fetchDrafts();
-  }, [fetchDrafts]);
+    if (user.id) {
+      fetchDrafts();
+    }
+  }, [user]);
 
   // Save draft (new or edited)
   const handleSave = async (values, { resetForm, setSubmitting }) => {
@@ -237,6 +247,12 @@ const PrivatePage = () => {
                       rows={6}
                       error={!!errors.description && touched.description}
                       helperText={touched.description && errors.description}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSubmit();
+                        }
+                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -313,6 +329,12 @@ const PrivatePage = () => {
                           rows={6}
                           error={!!errors.description && touched.description}
                           helperText={touched.description && errors.description}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSubmit();
+                            }
+                          }}
                         />
                       </Grid>
                     </Grid>
