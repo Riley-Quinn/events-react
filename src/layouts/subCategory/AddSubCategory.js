@@ -69,8 +69,14 @@ const AddSubCategory = ({ onClose, editSubCategory, setEditSubCategory }) => {
         }
       }}
     >
-      {({ errors, touched, handleChange, setFieldValue, values }) => (
-        <Form style={{ marginTop: "16px" }}>
+      {({ errors, touched, handleChange, setFieldValue, values, handleSubmit }) => (
+        <Form
+          style={{ marginTop: "16px" }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <Grid container spacing={2}>
             {/* Category Selection with Autocomplete */}
             <Grid item xs={12}>

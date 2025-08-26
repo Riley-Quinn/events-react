@@ -186,7 +186,7 @@ const UsersList = () => {
         <DialogTitle>Delete User</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this user? This action cannot be undone.
+            Are you sure you want to delete this user? This action can not be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

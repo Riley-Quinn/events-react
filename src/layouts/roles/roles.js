@@ -236,31 +236,47 @@ const ManageRoles = () => {
           <DialogTitle>
             <Typography variant="h5">Edit Role</Typography>
           </DialogTitle>
-          <DialogContent>
-            <Box sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                value={editedName}
-                onChange={(e) => {
-                  setEditedName(e.target.value);
-                  if (e.target.value.trim() !== "") {
-                    setError("");
-                  }
-                }}
-                variant="outlined"
-                error={!!error}
-                helperText={error}
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
-            <SoftButton className="cancel-button" onClick={() => setOpenEdit(false)}>
-              Cancel
-            </SoftButton>
-            <SoftButton className="add-usr-button" variant="gradient" onClick={handleEditSave}>
-              Save
-            </SoftButton>
-          </DialogActions>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleEditSave();
+            }}
+          >
+            <DialogContent>
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  fullWidth
+                  value={editedName}
+                  onChange={(e) => {
+                    setEditedName(e.target.value);
+                    if (e.target.value.trim() !== "") {
+                      setError("");
+                    }
+                  }}
+                  variant="outlined"
+                  error={!!error}
+                  helperText={error}
+                />
+              </Box>
+            </DialogContent>
+            <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
+              <SoftButton
+                className="cancel-button"
+                onClick={() => setOpenEdit(false)}
+                type="button"
+              >
+                Cancel
+              </SoftButton>
+              <SoftButton
+                className="add-usr-button"
+                variant="gradient"
+                onClick={handleEditSave}
+                type="submit"
+              >
+                Save
+              </SoftButton>
+            </DialogActions>
+          </form>
         </Dialog>
         <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
           <DialogTitle>Delete User</DialogTitle>

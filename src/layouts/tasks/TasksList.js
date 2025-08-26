@@ -76,7 +76,6 @@ const TasksList = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [isFromDashboard, setIsFromDashboard] = useState(false);
 
-  const token = localStorage.getItem("token");
   const ability = useAbility();
   useEffect(() => {
     const referrer = document.referrer;
@@ -96,24 +95,25 @@ const TasksList = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await authAxios.get(`/tasks?all=${showAll}`);
+      const shouldShowAll = showAll || Boolean(statusFilter);
+      const response = await authAxios.get(`/tasks?all=${shouldShowAll}`);
       setRows(response.data.list);
     } catch (error) {
       console.error("Unable to fetch tasks", error);
     }
-  }, [showAll]);
+  }, [showAll, statusFilter]);
 
   useEffect(() => {
     let filtered = [...rows];
 
     if (statusFilter) {
       filtered = filtered.filter((task) => task.status_name === statusFilter);
-    } else if (!isFromDashboard && !showAll) {
+    } else if (!showAll) {
       const today = new Date().toLocaleDateString("en-CA");
       filtered = filtered.filter((task) => {
         if (!task.start_date) return false;
         const taskDate = new Date(task.start_date).toLocaleDateString("en-CA");
-        return taskDate === today;
+        return taskDate === today && task.status_name !== "Closed";
       });
     }
 
@@ -127,18 +127,16 @@ const TasksList = () => {
   const onDragEnd = async (result) => {
     if (!result.destination) return;
 
-    // Reorder locally first for responsive UI
     const reordered = reorder(filteredRows, result.source.index, result.destination.index);
+    console.log("ttttt:", reordered);
     setFilteredRows(reordered);
 
     try {
-      // Calculate new priorities based on position (1-based index)
       const updatedTasks = reordered.map((task, index) => ({
         task_id: task.task_id,
         priority: index + 1,
       }));
 
-      // Send to backend
       await authAxios.post("/tasks/update-priority", {
         tasks: updatedTasks,
       });
@@ -146,7 +144,6 @@ const TasksList = () => {
       fetchSuccess("Task order updated successfully");
     } catch (error) {
       fetchError("Failed to update task order");
-      // Revert local changes if API fails
       fetchData();
     }
   };

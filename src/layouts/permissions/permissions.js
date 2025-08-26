@@ -189,35 +189,47 @@ const ManagePermissions = () => {
         <DialogTitle>
           <Typography variant="h5">Manage Role Permissions</Typography>
         </DialogTitle>
-        <DialogContent>
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Permissions
-            </Typography>
-            <FormGroup>
-              {permissions.map((perm) => (
-                <FormControlLabel
-                  key={perm.id}
-                  control={
-                    <Checkbox
-                      checked={rolePermissions.includes(perm.id)}
-                      onChange={() => togglePermission(perm.id)}
-                    />
-                  }
-                  label={`${perm.action.toUpperCase()} ${perm.subject}`}
-                />
-              ))}
-            </FormGroup>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
-          <SoftButton className="cancel-button" onClick={() => setOpenEdit(false)}>
-            Cancel
-          </SoftButton>
-          <SoftButton className="add-usr-button" variant="gradient" onClick={handleSave}>
-            Save
-          </SoftButton>
-        </DialogActions>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}
+        >
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Permissions
+              </Typography>
+              <FormGroup>
+                {permissions.map((perm) => (
+                  <FormControlLabel
+                    key={perm.id}
+                    control={
+                      <Checkbox
+                        checked={rolePermissions.includes(perm.id)}
+                        onChange={() => togglePermission(perm.id)}
+                      />
+                    }
+                    label={`${perm.action.toUpperCase()} ${perm.subject}`}
+                  />
+                ))}
+              </FormGroup>
+            </Box>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: "flex-end", mt: 2 }}>
+            <SoftButton className="cancel-button" onClick={() => setOpenEdit(false)} type="button">
+              Cancel
+            </SoftButton>
+            <SoftButton
+              className="add-usr-button"
+              variant="gradient"
+              onClick={handleSave}
+              type="submit"
+            >
+              Save
+            </SoftButton>
+          </DialogActions>
+        </form>
       </Dialog>
     </DashboardLayout>
   );

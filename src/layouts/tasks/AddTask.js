@@ -37,18 +37,36 @@ const validationSchema = Yup.object({
   category_id: Yup.number().typeError("Category must be selected").required("Category is required"),
   sub_category_id: Yup.number().nullable(),
   status_id: Yup.number().typeError("Status is required").required("Status is required"),
-  estimated_date: Yup.date().nullable(),
-  start_date: Yup.date().nullable(),
+  start_date: Yup.date()
+    .nullable()
+    .required("Start Date is Required")
+    .test("valid-year", "Year must be 4 digits", (value) => {
+      if (!value) return true;
+      const year = new Date(value).getFullYear().toString();
+      return year.length === 4;
+    }),
+  estimated_date: Yup.date()
+    .nullable()
+    .required("Estimated Date is Required")
+    .test("valid-year", "Year must be 4 digits", (value) => {
+      if (!value) return true;
+      const year = new Date(value).getFullYear().toString();
+      return year.length === 4;
+    }),
   is_important: Yup.boolean(),
   assignee_id: Yup.string().nullable(),
   role_id: Yup.number().nullable(),
   latitude: Yup.number().required("Please select a location on the map"),
   longitude: Yup.number().required("Please select a location on the map"),
-}).test(
-  "assignee-or-role",
-  "Either assignee or role must be selected",
-  (values) => !!values.assignee_id || !!values.role_id
-);
+}).test("assignee-or-role", null, function (values) {
+  if (!values.assignee_id && !values.role_id) {
+    return this.createError({
+      path: "assignee_id",
+      message: "Either assignee or role must be selected",
+    });
+  }
+  return true;
+});
 
 const AddTask = () => {
   const { fetchError, fetchSuccess } = useSnackbar();
@@ -263,8 +281,14 @@ const AddTask = () => {
             }
           }}
         >
-          {({ errors, touched, handleChange, setFieldValue, values }) => (
-            <Form style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {({ errors, touched, handleChange, setFieldValue, values, handleBlur, handleSubmit }) => (
+            <Form
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
@@ -607,12 +631,16 @@ const AddTask = () => {
                       type="date"
                       value={values.start_date}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       variant="outlined"
                       fullWidth
                       error={!!errors.start_date && touched.start_date}
                       helperText={touched.start_date && errors.start_date}
                       InputLabelProps={{
                         shrink: true,
+                      }}
+                      inputProps={{
+                        min: new Date().toISOString().split("T")[0],
                       }}
                     />
                   </FormControl>
@@ -628,12 +656,16 @@ const AddTask = () => {
                       type="date"
                       value={values.estimated_date}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       variant="outlined"
                       fullWidth
                       error={!!errors.estimated_date && touched.estimated_date}
                       helperText={touched.estimated_date && errors.estimated_date}
                       InputLabelProps={{
                         shrink: true,
+                      }}
+                      inputProps={{
+                        min: new Date().toISOString().split("T")[0],
                       }}
                     />
                   </FormControl>

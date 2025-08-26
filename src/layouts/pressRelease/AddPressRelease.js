@@ -88,8 +88,14 @@ const AddPressRelease = () => {
             }
           }}
         >
-          {({ errors, touched, handleChange, setFieldValue, values }) => (
-            <Form style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {({ errors, touched, handleChange, setFieldValue, values, handleSubmit }) => (
+            <Form
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+            >
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>

@@ -6,8 +6,8 @@ import {
   DialogActions,
   TextField,
   Button,
-  Snackbar,
-  Alert,
+  InputAdornment,
+  IconButton,
   Box,
   FormLabel,
 } from "@mui/material";
@@ -15,11 +15,32 @@ import LockIcon from "@mui/icons-material/Lock";
 import authAxios from "authAxios";
 import PropTypes from "prop-types";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
+import { Visibility } from "@mui/icons-material";
+import { VisibilityOff } from "@mui/icons-material";
+
+// helper function for rules
+const passwordSteps = [
+  { label: "Need at least one uppercase letter", test: (pw) => /[A-Z]/.test(pw) },
+  { label: "Need at least one lowercase letter", test: (pw) => /[a-z]/.test(pw) },
+  { label: "Need at least one number", test: (pw) => /\d/.test(pw) },
+  { label: "Need at least one special character (@$!%*?&)", test: (pw) => /[@$!%*?&]/.test(pw) },
+  { label: "Must be at least 8 characters long", test: (pw) => pw.length >= 8 },
+];
+
+const getNextRequirement = (pw) => {
+  for (let step of passwordSteps) {
+    if (!step.test(pw)) return step.label;
+  }
+  return null;
+};
 
 const ChangePasswordModal = ({ open, onClose }) => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const { fetchSuccess, fetchError } = useSnackbar();
 
@@ -63,36 +84,73 @@ const ChangePasswordModal = ({ open, onClose }) => {
           <Box mb={2}>
             <FormLabel>Current Password</FormLabel>
             <TextField
-              type="password"
+              type={showOld ? "text" : "password"}
               fullWidth
               variant="standard"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
-              InputProps={{ disableUnderline: true }}
+              InputProps={{
+                disableUnderline: true,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowOld((prev) => !prev)} edge="end">
+                      {showOld ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
           </Box>
 
           <Box mb={2}>
             <FormLabel>New Password</FormLabel>
             <TextField
-              type="password"
+              type={showNew ? "text" : "password"}
               fullWidth
               variant="standard"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              InputProps={{ disableUnderline: true }}
+              InputProps={{
+                disableUnderline: true,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowNew((prev) => !prev)} edge="end">
+                      {showNew ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              helperText={
+                newPassword
+                  ? getNextRequirement(newPassword) || "✅ Strong password"
+                  : "Password must contain at least one letter, one number, and one special character"
+              }
+              FormHelperTextProps={{
+                sx: {
+                  color: getNextRequirement(newPassword) ? "error.main" : "success.main",
+                },
+              }}
             />
           </Box>
 
           <Box mb={2}>
             <FormLabel>Confirm Password</FormLabel>
             <TextField
-              type="password"
+              type={showConfirm ? "text" : "password"}
               fullWidth
               variant="standard"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              InputProps={{ disableUnderline: true }}
+              InputProps={{
+                disableUnderline: true,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowConfirm((prev) => !prev)} edge="end">
+                      {showConfirm ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
           </Box>
         </DialogContent>
