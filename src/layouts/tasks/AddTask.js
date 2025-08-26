@@ -37,6 +37,8 @@ const validationSchema = Yup.object({
   category_id: Yup.number().typeError("Category must be selected").required("Category is required"),
   sub_category_id: Yup.number().nullable(),
   status_id: Yup.number().typeError("Status is required").required("Status is required"),
+  estimated_date: Yup.date().nullable(),
+  start_date: Yup.date().nullable(),
   start_date: Yup.date()
     .nullable()
     .required("Start Date is Required")
@@ -58,15 +60,11 @@ const validationSchema = Yup.object({
   role_id: Yup.number().nullable(),
   latitude: Yup.number().required("Please select a location on the map"),
   longitude: Yup.number().required("Please select a location on the map"),
-}).test("assignee-or-role", null, function (values) {
-  if (!values.assignee_id && !values.role_id) {
-    return this.createError({
-      path: "assignee_id",
-      message: "Either assignee or role must be selected",
-    });
-  }
-  return true;
-});
+}).test(
+  "assignee-or-role",
+  "Either assignee or role must be selected",
+  (values) => !!values.assignee_id || !!values.role_id
+);
 
 const AddTask = () => {
   const { fetchError, fetchSuccess } = useSnackbar();
