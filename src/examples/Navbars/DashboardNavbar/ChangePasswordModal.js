@@ -15,8 +15,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import authAxios from "authAxios";
 import PropTypes from "prop-types";
 import { useSnackbar } from "components/AlertMessages/SnackbarContext";
-import { Visibility } from "@mui/icons-material";
-import { VisibilityOff } from "@mui/icons-material";
+import { VisibilityOff, Visibility } from "@mui/icons-material";
 
 // helper function for rules
 const passwordSteps = [
